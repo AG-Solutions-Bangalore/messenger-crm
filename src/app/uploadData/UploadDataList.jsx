@@ -1,0 +1,487 @@
+import React, { useState } from "react";
+import Page from "../dashboard/page";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import axios from "axios";
+import BASE_URL from "@/config/BaseUrl";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+import {
+  ChevronDown,
+  Search,
+  Loader2,
+  Calendar,
+  SquarePlus,
+} from "lucide-react";
+import Loader from "@/components/loader/Loader";
+import { ButtonConfig } from "@/config/ButtonConfig";
+import CreateUploadData from "./CreateUploadData";
+import FollowupDialog from "./FollowupDialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+const UploadDataList = () => {
+  const [activeTab, setActiveTab] = useState("all");
+  const [followupId, setFollowupId] = useState(null);
+  const [followupDialogOpen, setFollowupDialogOpen] = useState(false);
+  const queryClient = useQueryClient();
+
+  // Fetch upload data
+  const {
+    data: uploadData,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
+    queryKey: ["uploadData"],
+    queryFn: async () => {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`${BASE_URL}/api/panel-fetch-upload-data`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return response.data;
+    },
+  });
+
+  // Fetch company status for filtering
+  const { data: statusData } = useQuery({
+    queryKey: ["companyStatus"],
+    queryFn: async () => {
+      const token = localStorage.getItem("token");
+      const response = await axios.get(`${BASE_URL}/api/panel-fetch-company-status`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return response.data.companyStatus;
+    },
+  });
+
+  // State for table management
+  const [sorting, setSorting] = useState([]);
+  const [columnFilters, setColumnFilters] = useState([]);
+  const [columnVisibility, setColumnVisibility] = useState({});
+  const [rowSelection, setRowSelection] = useState({});
+
+  // Filter data based on active tab
+  const filteredData = React.useMemo(() => {
+    if (!uploadData?.dataUpload || activeTab === "all") {
+      return uploadData?.dataUpload || [];
+    }
+    return uploadData.dataUpload.filter(
+      (item) => item.data_status === activeTab
+    );
+  }, [uploadData, activeTab]);
+
+  // Define columns for the table
+  const columns = [
+    {
+      accessorKey: "id",
+      header: "ID",
+      cell: ({ row }) => <div>{row.getValue("id")}</div>,
+    },
+    {
+      accessorKey: "mobile_no",
+      header: "Mobile Number",
+      cell: ({ row }) => <div>{row.getValue("mobile_no")}</div>,
+    },
+    {
+      accessorKey: "message",
+      header: "Message",
+      cell: ({ row }) => <div>{row.getValue("message")}</div>,
+    },
+    {
+      accessorKey: "data_image",
+      header: "Attachment",
+      cell: ({ row }) => (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="link"
+                className="text-blue-500 hover:text-blue-700"
+                onClick={() => {
+                  window.open(
+                    `${BASE_URL}/assets/images/data_images//${row.getValue("data_image")}`,
+                    "_blank"
+                  );
+                }}
+              >
+                View File
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Click to view attachment</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      ),
+    },
+    {
+      accessorKey: "file_attached",
+      header: "File Attached",
+      cell: ({ row }) => <div>{row.getValue("file_attached")}</div>,
+    },
+    {
+      accessorKey: "data_status",
+      header: "Status",
+      cell: ({ row }) => (
+        <div className="flex items-center">
+          <span
+            className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+              row.getValue("data_status")
+            )}`}
+          >
+            {row.getValue("data_status")}
+          </span>
+        </div>
+      ),
+    },
+    {
+      accessorKey: "data_created",
+      header: "Creation Date",
+      cell: ({ row }) => <div>{row.getValue("data_created")}</div>,
+    },
+    {
+      accessorKey: "followup_date",
+      header: "Follow-up Date",
+      cell: ({ row }) => (
+        <div>
+          {row.getValue("followup_date") || "-"}
+        </div>
+      ),
+    },
+    {
+      id: "actions",
+      header: "Actions",
+      cell: ({ row }) => {
+        const id = row.original.id;
+
+        return (
+          <div className="flex flex-row">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      setFollowupId(id);
+                      setFollowupDialogOpen(true);
+                    }}
+                  >
+                    <Calendar className="text-blue-500 w-5 h-5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Set Follow-up</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        );
+      },
+    },
+  ];
+
+  // Helper function to get status color
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "Pending":
+        return "bg-yellow-100 text-yellow-800";
+      case "Interested":
+        return "bg-green-100 text-green-800";
+      case "Not Interested":
+        return "bg-red-100 text-red-800";
+      case "Completed":
+        return "bg-blue-100 text-blue-800";
+      case "Follow Up":
+        return "bg-purple-100 text-purple-800";
+      case "Wrong Number":
+        return "bg-gray-100 text-gray-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  // Create the table instance
+  const table = useReactTable({
+    data: filteredData,
+    columns,
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    onColumnVisibilityChange: setColumnVisibility,
+    onRowSelectionChange: setRowSelection,
+    state: {
+      sorting,
+      columnFilters,
+      columnVisibility,
+      rowSelection,
+    },
+    initialState: {
+      pagination: {
+        pageSize: 10,
+      },
+    },
+  });
+
+  // Render loading state
+  if (isLoading) {
+    return (
+      <Page>
+        <div className="flex justify-center items-center h-full">
+          <Loader />
+        </div>
+      </Page>
+    );
+  }
+
+  // Render error state
+  if (isError) {
+    return (
+      <Page>
+        <Card className="w-full max-w-md mx-auto mt-10">
+          <CardHeader>
+            <CardTitle className="text-destructive">
+              Error Fetching Upload Data
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={() => refetch()} variant="outline">
+              Try Again
+            </Button>
+          </CardContent>
+        </Card>
+      </Page>
+    );
+  }
+
+  return (
+    <Page>
+      <div className="w-full p-0 md:p-4 grid grid-cols-1">
+        <div className="flex text-left text-2xl text-gray-800 font-[400]">
+          Upload Data List
+        </div>
+
+        <div className="flex flex-col md:flex-row md:items-center py-4 gap-2">
+          {/* Search Input */}
+          <div className="relative w-full md:w-72">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
+            <Input
+              placeholder="Search by mobile, message..."
+              value={table.getState().globalFilter || ""}
+              onChange={(event) => table.setGlobalFilter(event.target.value)}
+              className="pl-8 bg-gray-50 border-gray-200 focus:border-gray-300 focus:ring-gray-200 w-full"
+            />
+          </div>
+
+          {/* Status Filter */}
+          {/* <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="md:ml-2">
+                Status Filter <ChevronDown className="ml-2 h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuCheckboxItem
+                checked={activeTab === "all"}
+                onCheckedChange={() => setActiveTab("all")}
+              >
+                All
+              </DropdownMenuCheckboxItem>
+              {uploadData?.status?.map((status) => (
+                <DropdownMenuCheckboxItem
+                  key={status.companyStatus}
+                  checked={activeTab === status.companyStatus}
+                  onCheckedChange={() => setActiveTab(status.companyStatus)}
+                >
+                  {status.companyStatus}
+                </DropdownMenuCheckboxItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu> */}
+
+          {/* Dropdown Menu & Create Button */}
+          <div className="flex flex-col md:flex-row md:ml-auto gap-2 w-full md:w-auto">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="w-full md:w-auto">
+                  Columns <ChevronDown className="ml-2 h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {table
+                  .getAllColumns()
+                  .filter((column) => column.getCanHide())
+                  .map((column) => (
+                    <DropdownMenuCheckboxItem
+                      key={column.id}
+                      className="capitalize"
+                      checked={column.getIsVisible()}
+                      onCheckedChange={(value) =>
+                        column.toggleVisibility(!!value)
+                      }
+                    >
+                      {column.id}
+                    </DropdownMenuCheckboxItem>
+                  ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <CreateUploadData onSuccess={() => refetch()} />
+          </div>
+        </div>
+
+        {/* Status Tabs */}
+        <Tabs 
+  defaultValue="all" 
+  value={activeTab} 
+  onValueChange={setActiveTab}
+  className="mb-4"
+>
+  <TabsList className="h-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 w-full shadow-lg">
+    {/* All Tab */}
+    <TabsTrigger value="all">
+      All ({uploadData?.dataUpload?.length || 0})
+    </TabsTrigger>
+
+    {/* Status Tabs */}
+    {uploadData?.status?.map((status) => {
+      const statusCount = uploadData.dataUpload.filter(
+        (item) => item.data_status === status.companyStatus
+      ).length;
+
+      return (
+        <TabsTrigger key={status.companyStatus} value={status.companyStatus}>
+          {status.companyStatus} ({statusCount})
+        </TabsTrigger>
+      );
+    })}
+  </TabsList>
+</Tabs>
+        {/* Table */}
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <TableHead
+                      key={header.id}
+                      className={`${ButtonConfig.tableHeader} ${ButtonConfig.tableLabel}`}
+                    >
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center"
+                  >
+                    No results.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+
+        {/* Row selection and pagination button */}
+        <div className="flex items-center justify-end space-x-2 py-4">
+          <div className="flex-1 text-sm text-muted-foreground">
+            Total Entries: &nbsp;
+            {table.getFilteredRowModel().rows.length}
+          </div>
+          <div className="space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+            >
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+            >
+              Next
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Followup Dialog */}
+      <FollowupDialog
+        open={followupDialogOpen}
+        onOpenChange={setFollowupDialogOpen}
+        followupId={followupId}
+        onSuccess={() => refetch()}
+      />
+    </Page>
+  );
+};
+
+export default UploadDataList;
