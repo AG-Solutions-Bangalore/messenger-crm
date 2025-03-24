@@ -307,7 +307,7 @@ const CompanySuperView = () => {
                   })}
               </DropdownMenuContent>
             </DropdownMenu>
-            {company.company_no_of_user !== company.no_of_user_exist && (
+            {company.company_no_of_user > company.no_of_user_exist && (
             <CreateUserDialog   onSuccess={refetch}/>
             )}
 

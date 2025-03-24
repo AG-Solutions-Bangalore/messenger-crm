@@ -19,12 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Tooltip,
   TooltipContent,
@@ -45,19 +40,40 @@ import {
   Loader2,
   Calendar,
   SquarePlus,
+  Trash2,
 } from "lucide-react";
 import Loader from "@/components/loader/Loader";
 import { ButtonConfig } from "@/config/ButtonConfig";
 import CreateUploadData from "./CreateUploadData";
 import FollowupDialog from "./FollowupDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import DeleteFollowUp from "./DeleteFollowUp";
+import moment from "moment/moment";
+import DeleteAllFollowUpData from "./DeleteAllFollowUpData";
 
 const UploadDataList = () => {
   const [activeTab, setActiveTab] = useState("all");
   const [followupId, setFollowupId] = useState(null);
+  const [followupdeleteId, setFollowupdeleteId] = useState(null);
   const [followupDialogOpen, setFollowupDialogOpen] = useState(false);
-  const queryClient = useQueryClient();
+  const [followupDeleteDialogOpen, setFollowupDeleteDialogOpen] =
+    useState(false);
+  const [followupDeleteallDialogOpen, setFollowupDeleteallDialogOpen] =
+    useState(false);
 
+  const [formData, setFormData] = useState({
+    data_created: "",
+
+    data_status: "",
+  });
+  const handleStatusChange = (value) => {
+    setFormData((prev) => ({
+      ...prev,
+      status: value,
+    }));
+  };
+  const queryClient = useQueryClient();
+  const userType = localStorage.getItem("userType");
   // Fetch upload data
   const {
     data: uploadData,
@@ -68,9 +84,12 @@ const UploadDataList = () => {
     queryKey: ["uploadData"],
     queryFn: async () => {
       const token = localStorage.getItem("token");
-      const response = await axios.get(`${BASE_URL}/api/panel-fetch-upload-data`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await axios.get(
+        `${BASE_URL}/api/panel-fetch-upload-data`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       return response.data;
     },
   });
@@ -80,9 +99,12 @@ const UploadDataList = () => {
     queryKey: ["companyStatus"],
     queryFn: async () => {
       const token = localStorage.getItem("token");
-      const response = await axios.get(`${BASE_URL}/api/panel-fetch-company-status`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await axios.get(
+        `${BASE_URL}/api/panel-fetch-company-status`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       return response.data.companyStatus;
     },
   });
@@ -106,10 +128,11 @@ const UploadDataList = () => {
   // Define columns for the table
   const columns = [
     {
-      accessorKey: "id",
-      header: "ID",
-      cell: ({ row }) => <div>{row.getValue("id")}</div>,
+      accessorKey: "index",
+      header: "Id",
+      cell: ({ row }) => <div>{row.index + 1}</div>,
     },
+
     {
       accessorKey: "mobile_no",
       header: "Mobile Number",
@@ -132,7 +155,9 @@ const UploadDataList = () => {
                 className="text-blue-500 hover:text-blue-700"
                 onClick={() => {
                   window.open(
-                    `${BASE_URL}/assets/images/data_images//${row.getValue("data_image")}`,
+                    `${BASE_URL}/assets/images/data_images//${row.getValue(
+                      "data_image"
+                    )}`,
                     "_blank"
                   );
                 }}
@@ -170,16 +195,18 @@ const UploadDataList = () => {
     {
       accessorKey: "data_created",
       header: "Creation Date",
-      cell: ({ row }) => <div>{row.getValue("data_created")}</div>,
+      cell: ({ row }) => {
+        const date = row.getValue("data_created");
+        return <div>{date ? moment(date).format("DD-MMM-YYYY") : "-"}</div>;
+      },
     },
     {
       accessorKey: "followup_date",
       header: "Follow-up Date",
-      cell: ({ row }) => (
-        <div>
-          {row.getValue("followup_date") || "-"}
-        </div>
-      ),
+      cell: ({ row }) => {
+        const date = row.getValue("followup_date");
+        return <div>{date ? moment(date).format("DD-MMM-YYYY") : "-"}</div>;
+      },
     },
     {
       id: "actions",
@@ -208,6 +235,27 @@ const UploadDataList = () => {
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
+            {userType == "2" && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        setFollowupdeleteId(id);
+                        setFollowupDeleteDialogOpen(true);
+                      }}
+                    >
+                      <Trash2 className="text-red-500 w-5 h-5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Delete Follow-up</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
           </div>
         );
       },
@@ -309,33 +357,6 @@ const UploadDataList = () => {
             />
           </div>
 
-          {/* Status Filter */}
-          {/* <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="md:ml-2">
-                Status Filter <ChevronDown className="ml-2 h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuCheckboxItem
-                checked={activeTab === "all"}
-                onCheckedChange={() => setActiveTab("all")}
-              >
-                All
-              </DropdownMenuCheckboxItem>
-              {uploadData?.status?.map((status) => (
-                <DropdownMenuCheckboxItem
-                  key={status.companyStatus}
-                  checked={activeTab === status.companyStatus}
-                  onCheckedChange={() => setActiveTab(status.companyStatus)}
-                >
-                  {status.companyStatus}
-                </DropdownMenuCheckboxItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu> */}
-
-          {/* Dropdown Menu & Create Button */}
           <div className="flex flex-col md:flex-row md:ml-auto gap-2 w-full md:w-auto">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -363,36 +384,50 @@ const UploadDataList = () => {
             </DropdownMenu>
 
             <CreateUploadData onSuccess={() => refetch()} />
+
+            <Button
+              variant="default"
+              className="ml-2 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-300 hover:to-yellow-400 text-black font-medium shadow-md"
+              onClick={() => {
+                setFollowupDeleteallDialogOpen(true);
+              }}
+            >
+              <Trash2 className="w-5 h-5" />
+              Delete All Data
+            </Button>
           </div>
         </div>
 
         {/* Status Tabs */}
-        <Tabs 
-  defaultValue="all" 
-  value={activeTab} 
-  onValueChange={setActiveTab}
-  className="mb-4"
->
-  <TabsList className="h-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 w-full shadow-lg">
-    {/* All Tab */}
-    <TabsTrigger value="all">
-      All ({uploadData?.dataUpload?.length || 0})
-    </TabsTrigger>
+        <Tabs
+          defaultValue="all"
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="mb-4"
+        >
+          <TabsList className="h-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 w-full shadow-lg">
+            {/* All Tab */}
+            <TabsTrigger value="all">
+              All ({uploadData?.dataUpload?.length || 0})
+            </TabsTrigger>
 
-    {/* Status Tabs */}
-    {uploadData?.status?.map((status) => {
-      const statusCount = uploadData.dataUpload.filter(
-        (item) => item.data_status === status.companyStatus
-      ).length;
+            {/* Status Tabs */}
+            {uploadData?.status?.map((status) => {
+              const statusCount = uploadData.dataUpload.filter(
+                (item) => item.data_status === status.companyStatus
+              ).length;
 
-      return (
-        <TabsTrigger key={status.companyStatus} value={status.companyStatus}>
-          {status.companyStatus} ({statusCount})
-        </TabsTrigger>
-      );
-    })}
-  </TabsList>
-</Tabs>
+              return (
+                <TabsTrigger
+                  key={status.companyStatus}
+                  value={status.companyStatus}
+                >
+                  {status.companyStatus} ({statusCount})
+                </TabsTrigger>
+              );
+            })}
+          </TabsList>
+        </Tabs>
         {/* Table */}
         <div className="rounded-md border">
           <Table>
@@ -479,6 +514,20 @@ const UploadDataList = () => {
         onOpenChange={setFollowupDialogOpen}
         followupId={followupId}
         onSuccess={() => refetch()}
+      />
+      <DeleteFollowUp
+        open={followupDeleteDialogOpen}
+        onOpenChange={setFollowupDeleteDialogOpen}
+        onSuccess={() => refetch()}
+        followupdeleteId={followupdeleteId}
+      />
+      <DeleteAllFollowUpData
+        onOpenChange={setFollowupDeleteallDialogOpen}
+        open={followupDeleteallDialogOpen}
+        onSuccess={() => refetch()}
+        setFormData={setFormData}
+        formData={formData}
+        handleStatusChange={handleStatusChange}
       />
     </Page>
   );
