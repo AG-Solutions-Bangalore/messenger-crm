@@ -1,6 +1,6 @@
-import React from 'react';
-import axios from 'axios';
-import { Button } from '@/components/ui/button';
+import React from "react";
+import axios from "axios";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -8,39 +8,34 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 
-import BASE_URL from '@/config/BaseUrl';
-import { useToast } from '@/hooks/use-toast';
+import BASE_URL from "@/config/BaseUrl";
+import { useToast } from "@/hooks/use-toast";
 
-const EditUserDialog = ({ 
-  open, 
-  onOpenChange, 
-  selectedUser, 
-  onSuccess 
-}) => {
+const EditUserDialog = ({ open, onOpenChange, selectedUser, onSuccess }) => {
   const { toast } = useToast();
   const [formData, setFormData] = React.useState({
-    mobile: '',
-    email: '',
-    status: '',
+    mobile: "",
+    email: "",
+    status: "",
   });
 
   // Update form data when selected user changes
   React.useEffect(() => {
     if (selectedUser) {
       setFormData({
-        mobile: selectedUser.mobile || '',
-        email: selectedUser.email || '',
-        status: selectedUser.status || '',
+        mobile: selectedUser.mobile || "",
+        email: selectedUser.email || "",
+        status: selectedUser.status || "",
       });
     }
   }, [selectedUser]);
@@ -65,9 +60,9 @@ const EditUserDialog = ({
   // Handle form submission
   const handleSubmit = async () => {
     if (!selectedUser) return;
-    
+
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       await axios.put(
         `${BASE_URL}/api/panel-update-user/${selectedUser.id}`,
         formData,
@@ -75,12 +70,12 @@ const EditUserDialog = ({
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      
+
       toast({
         title: "Success",
         description: "User updated successfully",
       });
-      
+
       onOpenChange(false);
       if (onSuccess) onSuccess();
     } catch (error) {
@@ -97,10 +92,8 @@ const EditUserDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Edit User</DialogTitle>
-          <DialogDescription>
-            Update user information below
-          </DialogDescription>
+          <DialogTitle>Edit User 1</DialogTitle>
+          <DialogDescription>Update user information below</DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
@@ -113,6 +106,8 @@ const EditUserDialog = ({
               value={formData.mobile}
               onChange={handleInputChange}
               className="col-span-3"
+              inputMode="numeric"
+              pattern="[0-9]*"
               maxLength={10}
               onKeyPress={(e) => {
                 if (!/[0-9.]/.test(e.key) && e.key !== "Backspace") {
@@ -138,10 +133,7 @@ const EditUserDialog = ({
             <label htmlFor="status" className="text-right">
               Status
             </label>
-            <Select
-              value={formData.status}
-              onValueChange={handleStatusChange}
-            >
+            <Select value={formData.status} onValueChange={handleStatusChange}>
               <SelectTrigger className="col-span-3">
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
