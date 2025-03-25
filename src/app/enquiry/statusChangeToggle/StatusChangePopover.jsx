@@ -21,6 +21,8 @@ import {
   TooltipContent,
 } from "@/components/ui/tooltip";
 import BASE_URL from "@/config/BaseUrl";
+import { useToast } from "@/hooks/use-toast";
+import { ButtonConfig } from "@/config/ButtonConfig";
 
 const StatusChangePopover = ({ enquiryId, onStatusUpdate }) => {
   const [open, setOpen] = useState(false);
@@ -28,36 +30,46 @@ const StatusChangePopover = ({ enquiryId, onStatusUpdate }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
-
+  const { toast } = useToast();
   const handleStatusChange = async () => {
     if (!status) {
-      setError("Please select a status");
+      toast({
+        title: "Error",
+        description: "Please select a status",
+        variant: "destructive",
+      });
       return;
     }
 
-    setError("");
     setIsSubmitting(true);
-    
+
     try {
       const token = localStorage.getItem("token");
-      await axios.put(
+      const response = await axios.put(
         `${BASE_URL}/api/panel-update-enquiry-status/${enquiryId}`,
-        { 
-          enquiry_company_status: status 
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { enquiry_company_status: status },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-      
-      setSuccess(true);
-      setTimeout(() => {
-        setSuccess(false);
-        setOpen(false);
-        if (onStatusUpdate) onStatusUpdate();
-      }, 200);
+
+      if (response?.data?.code === 200) {
+        toast({
+          title: "Success",
+          description: response?.data?.msg || "Status updated successfully!",
+        });
+
+        setTimeout(() => {
+          setOpen(false);
+          if (onStatusUpdate) onStatusUpdate();
+        }, 200);
+      } else {
+        throw new Error(response?.data?.msg || "Failed to update status");
+      }
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to update status");
+      toast({
+        title: "Error",
+        description: err.response?.data?.msg || "Failed to update status",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -69,11 +81,7 @@ const StatusChangePopover = ({ enquiryId, onStatusUpdate }) => {
         <Tooltip>
           <TooltipTrigger asChild>
             <PopoverTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 p-0"
-              >
+              <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
                 <Settings className="h-4 w-4" />
                 <span className="sr-only">Change status</span>
               </Button>
@@ -83,11 +91,11 @@ const StatusChangePopover = ({ enquiryId, onStatusUpdate }) => {
             <p>Change Status</p>
           </TooltipContent>
         </Tooltip>
-        
+
         <PopoverContent className="w-56 p-3" align="end">
           <div className="space-y-4">
             <h4 className="font-medium text-sm">Change Status</h4>
-            
+
             <Select value={status} onValueChange={setStatus}>
               <SelectTrigger>
                 <SelectValue placeholder="Select status" />
@@ -98,22 +106,18 @@ const StatusChangePopover = ({ enquiryId, onStatusUpdate }) => {
                 <SelectItem value="User">User</SelectItem>
               </SelectContent>
             </Select>
-            
-            {error && (
-              <p className="text-destructive text-xs">{error}</p>
-            )}
-            
+
+            {error && <p className="text-destructive text-xs">{error}</p>}
+
             <div className="flex justify-end">
-              <Button 
-                size="sm" 
+              <Button
                 onClick={handleStatusChange}
                 disabled={isSubmitting || success}
+                loading={isSubmitting}
+                className={`${ButtonConfig.backgroundColor} ${ButtonConfig.hoverBackgroundColor} ${ButtonConfig.textColor}`}
               >
                 {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-3 w-3 animate-spin" />
-                    Updating
-                  </>
+                  <>Updating</>
                 ) : success ? (
                   <>
                     <Check className="mr-2 h-3 w-3" />

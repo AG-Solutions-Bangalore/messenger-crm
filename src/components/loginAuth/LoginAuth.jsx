@@ -77,7 +77,6 @@ export default function LoginAuth() {
         localStorage.setItem("name", UserInfo.user.name);
         localStorage.setItem("userType", UserInfo.user.user_type);
         localStorage.setItem("email", UserInfo.user.email);
-        // localStorage.setItem("token-expire-time", UserInfo.token_expires_at);
 
         console.log("✅ Login successful! Redirecting to /home...");
         navigate("/home");

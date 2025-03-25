@@ -22,6 +22,7 @@ import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import BASE_URL from "@/config/BaseUrl";
 import moment from "moment";
+import { ButtonConfig } from "@/config/ButtonConfig";
 
 const FollowupDialog = ({ open, onOpenChange, followupId, onSuccess }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -34,9 +35,12 @@ const FollowupDialog = ({ open, onOpenChange, followupId, onSuccess }) => {
     queryKey: ["companyStatus"],
     queryFn: async () => {
       const token = localStorage.getItem("token");
-      const response = await axios.get(`${BASE_URL}/api/panel-fetch-company-status`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await axios.get(
+        `${BASE_URL}/api/panel-fetch-company-status`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       return response.data.companyStatus;
     },
   });
@@ -65,24 +69,27 @@ const FollowupDialog = ({ open, onOpenChange, followupId, onSuccess }) => {
         }
       );
 
-      if (response?.data.code === 200) {
+      if (response?.data?.code === 200) {
         toast({
           title: "Success",
-          description: "Follow-up updated successfully",
+          description: response?.data?.msg || "Follow-up updated successfully",
         });
         onSuccess();
         onOpenChange(false);
-      } else {
+      } else if (response?.data?.code === 400) {
         toast({
           title: "Error",
-          description: response.data.msg || "Failed to update follow-up",
+          description: response?.data?.msg || "Duplicate User!",
           variant: "destructive",
         });
+      } else {
+        throw new Error(response?.data?.msg || "Failed to update follow-up");
       }
     } catch (error) {
       toast({
         title: "Error",
-        description: error.response?.data?.message || "Failed to update follow-up",
+        description:
+          error.response?.data?.message || "Failed to update follow-up",
         variant: "destructive",
       });
     } finally {
@@ -107,11 +114,10 @@ const FollowupDialog = ({ open, onOpenChange, followupId, onSuccess }) => {
 
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
-            <Label htmlFor="status">Status</Label>
-            <Select
-              value={selectedStatus}
-              onValueChange={setSelectedStatus}
-            >
+            <Label htmlFor="status">
+              Status<span className="text-red-500">*</span>
+            </Label>
+            <Select value={selectedStatus} onValueChange={setSelectedStatus}>
               <SelectTrigger id="status">
                 <SelectValue placeholder="Select a status" />
               </SelectTrigger>
@@ -144,16 +150,10 @@ const FollowupDialog = ({ open, onOpenChange, followupId, onSuccess }) => {
           <Button
             onClick={handleSubmit}
             disabled={isLoading}
-            className="bg-yellow-500 text-black hover:bg-yellow-100"
+            loading={isLoading}
+            className={`${ButtonConfig.backgroundColor} ${ButtonConfig.hoverBackgroundColor} ${ButtonConfig.textColor}`}
           >
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Updating...
-              </>
-            ) : (
-              "Update Follow-up"
-            )}
+            {isLoading ? <>Updating...</> : "Update Follow-up"}
           </Button>
         </DialogFooter>
       </DialogContent>

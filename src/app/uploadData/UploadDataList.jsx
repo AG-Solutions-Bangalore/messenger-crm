@@ -50,6 +50,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import DeleteFollowUp from "./DeleteFollowUp";
 import moment from "moment/moment";
 import DeleteAllFollowUpData from "./DeleteAllFollowUpData";
+import LoaderComponent, {
+  ErrorLoaderComponent,
+} from "@/components/common/LoaderComponent";
 
 const UploadDataList = () => {
   const [activeTab, setActiveTab] = useState("all");
@@ -63,18 +66,24 @@ const UploadDataList = () => {
 
   const [formData, setFormData] = useState({
     data_created: "",
-
     data_status: "",
   });
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
   const handleStatusChange = (value) => {
     setFormData((prev) => ({
       ...prev,
-      status: value,
+      data_status: value,
     }));
   };
   const queryClient = useQueryClient();
   const userType = localStorage.getItem("userType");
-  // Fetch upload data
   const {
     data: uploadData,
     isLoading,
@@ -311,9 +320,7 @@ const UploadDataList = () => {
   if (isLoading) {
     return (
       <Page>
-        <div className="flex justify-center items-center h-full">
-          <Loader />
-        </div>
+        <LoaderComponent data={"Upload Data"} />
       </Page>
     );
   }
@@ -322,22 +329,10 @@ const UploadDataList = () => {
   if (isError) {
     return (
       <Page>
-        <Card className="w-full max-w-md mx-auto mt-10">
-          <CardHeader>
-            <CardTitle className="text-destructive">
-              Error Fetching Upload Data
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Button onClick={() => refetch()} variant="outline">
-              Try Again
-            </Button>
-          </CardContent>
-        </Card>
+        <ErrorLoaderComponent data="Upload Data" onClick={() => refetch()} />
       </Page>
     );
   }
-
   return (
     <Page>
       <div className="w-full p-0 md:p-4 grid grid-cols-1">
@@ -387,7 +382,7 @@ const UploadDataList = () => {
 
             <Button
               variant="default"
-              className="ml-2 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-300 hover:to-yellow-400 text-black font-medium shadow-md"
+              className={`${ButtonConfig.backgroundColor} ${ButtonConfig.hoverBackgroundColor} ${ButtonConfig.textColor}`}
               onClick={() => {
                 setFollowupDeleteallDialogOpen(true);
               }}
@@ -527,6 +522,7 @@ const UploadDataList = () => {
         onSuccess={() => refetch()}
         setFormData={setFormData}
         formData={formData}
+        handleInputChange={handleInputChange}
         handleStatusChange={handleStatusChange}
       />
     </Page>

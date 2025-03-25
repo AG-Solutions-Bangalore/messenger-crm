@@ -7,6 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import BASE_URL from "@/config/BaseUrl";
+import { ButtonConfig } from "@/config/ButtonConfig";
 import { useToast } from "@/hooks/use-toast";
 import axios from "axios";
 import { Loader2 } from "lucide-react";
@@ -41,12 +42,14 @@ const DeleteFollowUp = ({
         });
         onSuccess();
         onOpenChange(false);
-      } else {
+      } else if (response?.data?.code === 400) {
         toast({
           title: "Error",
-          description: response?.data?.msg || "Failed to delete follow-up.",
+          description: response?.data?.msg || "Duplicate User!",
           variant: "destructive",
         });
+      } else {
+        throw new Error(response?.data?.msg || "Failed to delete follow-up.");
       }
     } catch (error) {
       toast({
@@ -73,16 +76,10 @@ const DeleteFollowUp = ({
           <Button
             onClick={handleSubmit}
             disabled={isLoading}
-            className="bg-yellow-500 text-black hover:bg-yellow-100"
+            loading={isLoading}
+            className={`${ButtonConfig.backgroundColor} ${ButtonConfig.hoverBackgroundColor} ${ButtonConfig.textColor}`}
           >
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Deleteting...
-              </>
-            ) : (
-              "Delete Follow-up"
-            )}
+            {isLoading ? <>Deleteting...</> : "Delete Follow-up"}
           </Button>
         </DialogFooter>
       </DialogContent>

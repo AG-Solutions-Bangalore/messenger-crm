@@ -1,35 +1,13 @@
-import Page from '@/app/dashboard/page';
-import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
-import axios from 'axios';
-import { useQuery } from '@tanstack/react-query';
-import {
-  ArrowUpDown,
-  ChevronDown,
-  Edit,
-  Loader2,
-  Search,
-} from 'lucide-react';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
-import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import Page from "@/app/dashboard/page";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -37,7 +15,16 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from "@/components/ui/table";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import BASE_URL from "@/config/BaseUrl";
+import { ButtonConfig } from "@/config/ButtonConfig";
+import { useQuery } from "@tanstack/react-query";
 import {
   flexRender,
   getCoreRowModel,
@@ -45,12 +32,14 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from '@tanstack/react-table';
-import BASE_URL from '@/config/BaseUrl';
-import { ButtonConfig } from '@/config/ButtonConfig';
-import EditUserDialog from '../companyEditDialog/EditUserDialog';
-import CreateUserDialog from '../commonCreateDialog/CreateUserDialog';
- // Import the new dialog component
+} from "@tanstack/react-table";
+import axios from "axios";
+import { ArrowUpDown, ChevronDown, Edit, Loader2, Search } from "lucide-react";
+import { useState } from "react";
+import { useParams } from "react-router-dom";
+import CreateUserDialog from "../commonCreateDialog/CreateUserDialog";
+import EditUserDialog from "../companyEditDialog/EditUserDialog";
+// Import the new dialog component
 
 const CompanySuperView = () => {
   const { id } = useParams();
@@ -58,15 +47,10 @@ const CompanySuperView = () => {
   const [selectedUser, setSelectedUser] = useState(null);
 
   // Fetch company data by ID
-  const {
-    data,
-    isLoading,
-    isError,
-    refetch,
-  } = useQuery({
-    queryKey: ['company', id],
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: ["company", id],
     queryFn: async () => {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       const response = await axios.get(
         `${BASE_URL}/api/panel-fetch-company-by-id/${id}`,
         {
@@ -82,53 +66,55 @@ const CompanySuperView = () => {
   const [columnFilters, setColumnFilters] = useState([]);
   const [columnVisibility, setColumnVisibility] = useState({});
   const [rowSelection, setRowSelection] = useState({});
-  const [globalFilter, setGlobalFilter] = useState('');
+  const [globalFilter, setGlobalFilter] = useState("");
 
   // Define columns for the users table
   const columns = [
     {
-      accessorKey: 'id',
-      header: 'ID',
-      cell: ({ row }) => <div>{row.getValue('id')}</div>,
+      accessorKey: "id",
+      header: "ID",
+      cell: ({ row }) => <div>{row.getValue("id")}</div>,
     },
     {
-      accessorKey: 'name',
+      accessorKey: "name",
       header: ({ column }) => (
         <Button
           variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Name
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
-      cell: ({ row }) => <div>{row.getValue('name')}</div>,
+      cell: ({ row }) => <div>{row.getValue("name")}</div>,
     },
     {
-      accessorKey: 'mobile',
-      header: 'Mobile',
-      cell: ({ row }) => <div>{row.getValue('mobile')}</div>,
+      accessorKey: "mobile",
+      header: "Mobile",
+      cell: ({ row }) => <div>{row.getValue("mobile")}</div>,
     },
     {
-      accessorKey: 'email',
-      header: 'Email',
-      cell: ({ row }) => <div>{row.getValue('email')}</div>,
+      accessorKey: "email",
+      header: "Email",
+      cell: ({ row }) => <div>{row.getValue("email")}</div>,
     },
     {
-      accessorKey: 'status',
-      header: 'Status',
+      accessorKey: "status",
+      header: "Status",
       cell: ({ row }) => {
-        const status = row.getValue('status');
+        const status = row.getValue("status");
         return (
-          <span className={status === 'Active' ? 'text-green-600' : 'text-red-600'}>
+          <span
+            className={status === "Active" ? "text-green-600" : "text-red-600"}
+          >
             {status}
           </span>
         );
       },
     },
     {
-      id: 'actions',
-      header: 'Action',
+      id: "actions",
+      header: "Action",
       cell: ({ row }) => {
         const user = row.original;
 
@@ -188,7 +174,6 @@ const CompanySuperView = () => {
     setEditDialogOpen(true);
   };
 
- 
   // Render loading state
   if (isLoading) {
     return (
@@ -239,37 +224,40 @@ const CompanySuperView = () => {
 
         {/* Company Information Card */}
         <Card className="mb-4">
-  <CardHeader className="py-3">
-    <CardTitle className="text-lg">{company.company_name}</CardTitle>
-  </CardHeader>
-  <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-3 py-2">
-    <div>
-      <p className="text-xs text-gray-500">Company Type</p>
-      <p className="font-medium text-sm">{company.company_type}</p>
-    </div>
-    <div>
-      <p className="text-xs text-gray-500">Mobile</p>
-      <p className="font-medium text-sm">{company.company_mobile}</p>
-    </div>
-    <div>
-      <p className="text-xs text-gray-500">Email</p>
-      <p className="font-medium text-sm">{company.company_email}</p>
-    </div>
-    <div>
-      <p className="text-xs text-gray-500">Status</p>
-      <p className={`font-medium text-sm ${company.company_status === 'Active' ? 'text-green-600' : 'text-red-600'}`}>
-        {company.company_status}
-      </p>
-    </div>
-  </CardContent>
-</Card>
+          <CardHeader className="py-3">
+            <CardTitle className="text-lg">{company.company_name}</CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-3 py-2">
+            <div>
+              <p className="text-xs text-gray-500">Company Type</p>
+              <p className="font-medium text-sm">{company.company_type}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500">Mobile</p>
+              <p className="font-medium text-sm">{company.company_mobile}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500">Email</p>
+              <p className="font-medium text-sm">{company.company_email}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500">Status</p>
+              <p
+                className={`font-medium text-sm ${
+                  company.company_status === "Active"
+                    ? "text-green-600"
+                    : "text-red-600"
+                }`}
+              >
+                {company.company_status}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
 
-        {/* User List Section */}
         <div className="mt-8">
-          <div className="text-xl text-gray-800 font-[400] mb-4">
-            User List
-          </div>
-          
+          <div className="text-xl text-gray-800 font-[400] mb-4">User List</div>
+
           {/* Search and column filter */}
           <div className="flex items-center py-4">
             <div className="relative w-72">
@@ -308,9 +296,8 @@ const CompanySuperView = () => {
               </DropdownMenuContent>
             </DropdownMenu>
             {company.company_no_of_user > company.no_of_user_exist && (
-            <CreateUserDialog   onSuccess={refetch}/>
+              <CreateUserDialog onSuccess={refetch} />
             )}
-
           </div>
 
           {/* Users Table */}

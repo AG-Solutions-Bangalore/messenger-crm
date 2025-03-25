@@ -1,23 +1,36 @@
 import React, { useState, useEffect } from "react";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { SquarePlus, Loader2, Download, Upload, FileSpreadsheet, FileImage } from "lucide-react";
+import {
+  SquarePlus,
+  Loader2,
+  Download,
+  Upload,
+  FileSpreadsheet,
+  FileImage,
+} from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import axios from "axios";
 import BASE_URL from "@/config/BaseUrl";
 import { Card, CardContent } from "@/components/ui/card";
+import { ButtonConfig } from "@/config/ButtonConfig";
 
 const CreateUploadData = ({ onSuccess }) => {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  
+
   const [formData, setFormData] = useState({
     data_type: "Individual",
     uploaded_file: null,
@@ -39,29 +52,40 @@ const CreateUploadData = ({ onSuccess }) => {
   }, [open]);
 
   const handleInputChange = (name, value) => {
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleFileChange = (e, fieldName) => {
-    setFormData(prev => ({ ...prev, [fieldName]: e.target.files[0] || null }));
+    setFormData((prev) => ({
+      ...prev,
+      [fieldName]: e.target.files[0] || null,
+    }));
   };
 
   const handleSubmit = async () => {
-    // Validation
-    if (!formData.uploaded_file) {
-      toast({ title: "Error", description: "Please upload an Excel file", variant: "destructive" });
-      return;
-    }
-    if (formData.file_attached === "Yes" && !formData.data_image) {
-      toast({ title: "Error", description: "Please upload an image/PDF file", variant: "destructive" });
-      return;
-    }
-    if (formData.data_type === "Common" && !formData.message) {
-      toast({ title: "Error", description: "Please enter a message", variant: "destructive" });
-      return;
-    }
-
     setIsLoading(true);
+
+    let errors = [];
+    if (!formData.uploaded_file) errors.push("Please upload an Excel file");
+    if (formData.file_attached === "Yes" && !formData.data_image)
+      errors.push("Please upload an image/PDF file.");
+    if (formData.data_type === "Common" && !formData.message)
+      errors.push("Please enter a message.");
+    if (errors.length > 0) {
+      toast({
+        title: "Error",
+        description: (
+          <>
+            {errors.map((err, index) => (
+              <div key={index}>{err}</div>
+            ))}
+          </>
+        ),
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
     const data = new FormData();
     data.append("data_type", formData.data_type);
     data.append("uploaded_file", formData.uploaded_file);
@@ -75,23 +99,29 @@ const CreateUploadData = ({ onSuccess }) => {
         `${BASE_URL}/api/panel-create-upload-data`,
         data,
         {
-          headers: { 
+          headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data"
+            "Content-Type": "multipart/form-data",
           },
         }
       );
 
-      if (response?.data.code === 200) {
-        toast({ title: "Success", description: "Data uploaded successfully" });
+      if (response?.data?.code === 200) {
+        toast({
+          title: "Success",
+          description: response?.data?.msg || "Data created successfully!",
+        });
         setOpen(false);
         if (onSuccess) onSuccess();
-      } else {
+        setOpen(false);
+      } else if (response?.data?.code === 400) {
         toast({
           title: "Error",
-          description: response.data.msg || "Failed to upload data",
+          description: response?.data?.msg || "Duplicate User!",
           variant: "destructive",
         });
+      } else {
+        throw new Error(response?.data?.msg || "Failed to create user.");
       }
     } catch (error) {
       toast({
@@ -107,9 +137,9 @@ const CreateUploadData = ({ onSuccess }) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button 
-          variant="default" 
-          className="ml-2 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-300 hover:to-yellow-400 text-black font-medium shadow-md"
+        <Button
+          variant="default"
+          className={`${ButtonConfig.backgroundColor} ${ButtonConfig.hoverBackgroundColor} ${ButtonConfig.textColor}`}
         >
           <SquarePlus className="h-4 w-4 mr-2" /> Upload Data
         </Button>
@@ -118,7 +148,7 @@ const CreateUploadData = ({ onSuccess }) => {
       <DialogContent className="sm:max-w-md bg-gradient-to-b from-white to-gray-50 shadow-lg border-yellow-200 p-0">
         <DialogHeader className="bg-yellow-50 px-4 pt-4 pb-2 border-b border-yellow-100">
           <DialogTitle className="text-lg font-semibold text-gray-800 flex items-center">
-            <Upload className="h-4 w-4 mr-2 text-yellow-500" /> 
+            <Upload className="h-4 w-4 mr-2 text-yellow-500" />
             Upload New Data
           </DialogTitle>
         </DialogHeader>
@@ -126,26 +156,43 @@ const CreateUploadData = ({ onSuccess }) => {
         <div className="px-4 py-3 space-y-3">
           {/* Data Type */}
           <div className="space-y-1.5">
-            <Label className="text-xs font-medium text-gray-700">Data Type</Label>
+            <Label className="text-xs font-medium text-gray-700">
+              Data Type
+            </Label>
             <RadioGroup
               value={formData.data_type}
               onValueChange={(value) => handleInputChange("data_type", value)}
               className="flex space-x-4"
             >
               <div className="flex items-center space-x-1 bg-gray-50 px-3 py-1 rounded-md border border-gray-100 hover:bg-yellow-50">
-                <RadioGroupItem value="Individual" id="individual" className="text-black h-4 w-4" />
-                <Label htmlFor="individual" className="cursor-pointer text-sm">Individual</Label>
+                <RadioGroupItem
+                  value="Individual"
+                  id="individual"
+                  className="text-black h-4 w-4"
+                />
+                <Label htmlFor="individual" className="cursor-pointer text-sm">
+                  Individual
+                </Label>
               </div>
               <div className="flex items-center space-x-1 bg-gray-50 px-3 py-1 rounded-md border border-gray-100 hover:bg-yellow-50">
-                <RadioGroupItem value="Common" id="common" className="text-black h-4 w-4" />
-                <Label htmlFor="common" className="cursor-pointer text-sm">Common</Label>
+                <RadioGroupItem
+                  value="Common"
+                  id="common"
+                  className="text-black h-4 w-4"
+                />
+                <Label htmlFor="common" className="cursor-pointer text-sm">
+                  Common
+                </Label>
               </div>
             </RadioGroup>
           </div>
 
           {/* Uploaded File */}
           <div className="space-y-1.5">
-            <Label htmlFor="uploaded_file" className="text-xs font-medium text-gray-700 flex items-center">
+            <Label
+              htmlFor="uploaded_file"
+              className="text-xs font-medium text-gray-700 flex items-center"
+            >
               <FileSpreadsheet className="h-3 w-3 mr-1 text-green-500" />
               Excel File
             </Label>
@@ -157,17 +204,23 @@ const CreateUploadData = ({ onSuccess }) => {
                 onChange={(e) => handleFileChange(e, "uploaded_file")}
                 className="text-xs p-1"
               />
-              <p className="text-xs text-gray-500 mt-1">Upload Excel (.xls/.xlsx)</p>
+              <p className="text-xs text-gray-500 mt-1">
+                Upload Excel (.xls/.xlsx)
+              </p>
             </div>
             <Button
               variant="outline"
               size="sm"
-              onClick={() => window.open(
-                `https://agsdemo.in/emapi/public/assets/images/excel/${
-                  formData.data_type === "Individual" ? "Individual.xlsx" : "Common.xlsx"
-                }`,
-                "_blank"
-              )}
+              onClick={() =>
+                window.open(
+                  `https://agsdemo.in/emapi/public/assets/images/excel/${
+                    formData.data_type === "Individual"
+                      ? "Individual.xlsx"
+                      : "Common.xlsx"
+                  }`,
+                  "_blank"
+                )
+              }
               className="text-xs h-7 px-2 bg-gray-50 hover:bg-yellow-50 border-gray-200"
             >
               <Download className="h-3 w-3 mr-1" />
@@ -177,19 +230,35 @@ const CreateUploadData = ({ onSuccess }) => {
 
           {/* File Attached */}
           <div className="space-y-1.5">
-            <Label className="text-xs font-medium text-gray-700">File Attached</Label>
+            <Label className="text-xs font-medium text-gray-700">
+              File Attached
+            </Label>
             <RadioGroup
               value={formData.file_attached}
-              onValueChange={(value) => handleInputChange("file_attached", value)}
+              onValueChange={(value) =>
+                handleInputChange("file_attached", value)
+              }
               className="flex space-x-4"
             >
               <div className="flex items-center space-x-1 bg-gray-50 px-3 py-1 rounded-md border border-gray-100 hover:bg-yellow-50">
-                <RadioGroupItem value="Yes" id="yes" className="text-black h-4 w-54" />
-                <Label htmlFor="yes" className="cursor-pointer text-sm">Yes</Label>
+                <RadioGroupItem
+                  value="Yes"
+                  id="yes"
+                  className="text-black h-4 w-54"
+                />
+                <Label htmlFor="yes" className="cursor-pointer text-sm">
+                  Yes
+                </Label>
               </div>
               <div className="flex items-center space-x-1 bg-gray-50 px-3 py-1 rounded-md border border-gray-100 hover:bg-yellow-50">
-                <RadioGroupItem value="No" id="no" className="text-black h-4 w-4" />
-                <Label htmlFor="no" className="cursor-pointer text-sm">No</Label>
+                <RadioGroupItem
+                  value="No"
+                  id="no"
+                  className="text-black h-4 w-4"
+                />
+                <Label htmlFor="no" className="cursor-pointer text-sm">
+                  No
+                </Label>
               </div>
             </RadioGroup>
           </div>
@@ -197,7 +266,10 @@ const CreateUploadData = ({ onSuccess }) => {
           {/* Data Image (conditional) */}
           {formData.file_attached === "Yes" && (
             <div className="space-y-1.5 animate-fadeIn">
-              <Label htmlFor="data_image" className="text-xs font-medium text-gray-700 flex items-center">
+              <Label
+                htmlFor="data_image"
+                className="text-xs font-medium text-gray-700 flex items-center"
+              >
                 <FileImage className="h-3 w-3 mr-1 text-blue-500" />
                 Image/PDF
               </Label>
@@ -209,7 +281,9 @@ const CreateUploadData = ({ onSuccess }) => {
                   onChange={(e) => handleFileChange(e, "data_image")}
                   className="text-xs p-1"
                 />
-                <p className="text-xs text-gray-500 mt-1">Upload image or PDF</p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Upload image or PDF
+                </p>
               </div>
             </div>
           )}
@@ -217,7 +291,12 @@ const CreateUploadData = ({ onSuccess }) => {
           {/* Message (conditional) */}
           {formData.data_type === "Common" && (
             <div className="space-y-1.5 animate-fadeIn">
-              <Label htmlFor="message" className="text-xs font-medium text-gray-700">Message</Label>
+              <Label
+                htmlFor="message"
+                className="text-xs font-medium text-gray-700"
+              >
+                Message
+              </Label>
               <Textarea
                 id="message"
                 value={formData.message}
@@ -230,8 +309,8 @@ const CreateUploadData = ({ onSuccess }) => {
         </div>
 
         <DialogFooter className="px-4 py-3 bg-gray-50 border-t border-gray-100 flex justify-between">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={() => setOpen(false)}
             className="h-8 px-3 border-gray-200 hover:bg-gray-100 text-gray-700 text-sm"
           >
@@ -240,13 +319,11 @@ const CreateUploadData = ({ onSuccess }) => {
           <Button
             onClick={handleSubmit}
             disabled={isLoading}
-            className="h-8 px-3 bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-300 hover:to-yellow-400 text-black font-medium text-sm"
+            loading={isLoading}
+            className={`${ButtonConfig.backgroundColor} ${ButtonConfig.hoverBackgroundColor} ${ButtonConfig.textColor}`}
           >
             {isLoading ? (
-              <>
-                <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
-                Uploading...
-              </>
+              <>Uploading...</>
             ) : (
               <>
                 <Upload className="mr-1.5 h-3 w-3" />

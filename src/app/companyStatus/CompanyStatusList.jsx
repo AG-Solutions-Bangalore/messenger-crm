@@ -1,6 +1,18 @@
 import Page from "@/app/dashboard/page";
+import LoaderComponent, {
+  ErrorLoaderComponent,
+} from "@/components/common/LoaderComponent";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -22,18 +34,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import BASE_URL from "@/config/BaseUrl";
+import { ButtonConfig } from "@/config/ButtonConfig";
+import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import {
   flexRender,
@@ -44,22 +47,17 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import axios from "axios";
-import { ArrowUpDown, ChevronDown, Loader2, Search, Trash, Trash2 } from "lucide-react";
+import { ChevronDown, Loader2, Search, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
-import { ButtonConfig } from "@/config/ButtonConfig";
-import Loader from "@/components/loader/Loader";
-import { Separator } from "@/components/ui/separator";
 import CreateCompanyStatus from "./CreateCompanyStatus";
-import EditCompanyStatus from "./EditCompanyStatus";
 
 const CompanyStatusList = () => {
   const { toast } = useToast();
   const [deleteId, setDeleteId] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  
+
   const {
     data: companyStatus,
     isLoading,
@@ -69,9 +67,12 @@ const CompanyStatusList = () => {
     queryKey: ["companyStatus"],
     queryFn: async () => {
       const token = localStorage.getItem("token");
-      const response = await axios.get(`${BASE_URL}/api/panel-fetch-company-status`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await axios.get(
+        `${BASE_URL}/api/panel-fetch-company-status`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       return response.data.companyStatus;
     },
   });
@@ -79,7 +80,7 @@ const CompanyStatusList = () => {
   // Handle delete function
   const handleDelete = async () => {
     if (!deleteId) return;
-    
+
     setIsDeleting(true);
     try {
       const token = localStorage.getItem("token");
@@ -89,24 +90,31 @@ const CompanyStatusList = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      
-      if (response?.data.code === 200) {
+
+      if (response?.data?.code === 200) {
         toast({
           title: "Success",
-          description: "Company status deleted successfully",
+          description:
+            response?.data?.msg || "Company status deleted successfully",
         });
+
         await refetch();
-      } else {
+      } else if (response?.data?.code === 400) {
         toast({
           title: "Error",
-          description: response.data.msg || "Failed to delete company status",
+          description: response?.data?.msg || "Duplicate status!",
           variant: "destructive",
         });
+      } else {
+        throw new Error(
+          response?.data?.msg || "Failed to delete Company status."
+        );
       }
     } catch (error) {
       toast({
         title: "Error",
-        description: error.response?.data?.message || "Failed to delete company status",
+        description:
+          error.response?.data?.message || "Failed to delete company status",
         variant: "destructive",
       });
     } finally {
@@ -144,8 +152,8 @@ const CompanyStatusList = () => {
 
         return (
           <div className="flex flex-row">
-            <EditCompanyStatus companyStatusId={companyStatusId} />
-            
+            {/* <EditCompanyStatus companyStatusId={companyStatusId} /> */}
+
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -196,13 +204,10 @@ const CompanyStatusList = () => {
     },
   });
 
-  // Render loading state
   if (isLoading) {
     return (
       <Page>
-        <div className="flex justify-center items-center h-full">
-         <Loader/>
-        </div>
+        <LoaderComponent data={"Company Status"} />
       </Page>
     );
   }
@@ -211,22 +216,11 @@ const CompanyStatusList = () => {
   if (isError) {
     return (
       <Page>
-        <Card className="w-full max-w-md mx-auto mt-10">
-          <CardHeader>
-            <CardTitle className="text-destructive">
-              Error Fetching Company Status
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Button onClick={() => refetch()} variant="outline">
-              Try Again
-            </Button>
-          </CardContent>
-        </Card>
+        <ErrorLoaderComponent data="Company Status" onClick={() => refetch()} />
       </Page>
     );
   }
-  
+
   return (
     <Page>
       <div className="w-full p-0 md:p-4 grid grid-cols-1">
@@ -276,7 +270,7 @@ const CompanyStatusList = () => {
             <CreateCompanyStatus />
           </div>
         </div>
-        
+
         {/* table */}
         <div className="rounded-md border">
           <Table>
@@ -329,7 +323,7 @@ const CompanyStatusList = () => {
             </TableBody>
           </Table>
         </div>
-        
+
         {/* row selection and pagination button */}
         <div className="flex items-center justify-end space-x-2 py-4">
           <div className="flex-1 text-sm text-muted-foreground">
@@ -356,7 +350,7 @@ const CompanyStatusList = () => {
           </div>
         </div>
       </div>
-      
+
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
@@ -369,28 +363,22 @@ const CompanyStatusList = () => {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
+            <Button
               onClick={(e) => {
                 e.preventDefault();
                 handleDelete();
               }}
               disabled={isDeleting}
+              loading={isDeleting}
               className="bg-red-500 hover:bg-red-600 text-white"
             >
-              {isDeleting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Deleting...
-                </>
-              ) : (
-                "Delete"
-              )}
-            </AlertDialogAction>
+              {isDeleting ? <>Deleting...</> : "Delete"}
+            </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </Page>
-  )
-}
+  );
+};
 
 export default CompanyStatusList;
