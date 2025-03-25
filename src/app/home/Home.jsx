@@ -1,21 +1,20 @@
-import React from "react";
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
-import Page from "../dashboard/page";
 import LoaderComponent, {
   ErrorLoaderComponent,
 } from "@/components/common/LoaderComponent";
+import useApiToken from "@/components/common/UseToken";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
+import Page from "../dashboard/page";
 
 const BASE_URL = "http://agsdemo.in/emapi/public";
-
 const Home = () => {
+  const token = useApiToken();
+
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["dashboardData"],
     queryFn: async () => {
-      const token = localStorage.getItem("token");
       const response = await axios.get(
         `${BASE_URL}/api/panel-fetch-dashboard`,
         {

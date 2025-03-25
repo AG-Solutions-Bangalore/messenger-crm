@@ -23,8 +23,11 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { ButtonConfig } from "@/config/ButtonConfig";
+import useApiToken from "@/components/common/UseToken";
 
 const EditUserDialog = ({ open, onOpenChange, selectedUser, onSuccess }) => {
+  const token = useApiToken();
+
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -88,7 +91,6 @@ const EditUserDialog = ({ open, onOpenChange, selectedUser, onSuccess }) => {
     if (!selectedUser) return;
 
     try {
-      const token = localStorage.getItem("token");
       const response = await axios.put(
         `${BASE_URL}/api/panel-update-user/${selectedUser.id}`,
         formData,
@@ -132,7 +134,7 @@ const EditUserDialog = ({ open, onOpenChange, selectedUser, onSuccess }) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle>Edit User</DialogTitle>
         </DialogHeader>

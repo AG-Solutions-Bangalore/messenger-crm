@@ -57,7 +57,6 @@ export default function ForgotPassword() {
     formData.append("mobile", mobile);
 
     try {
-      console.log("Submitting forgot password request...");
 
       const res = await axios.post(`${BASE_URL}/api/panel-send-password`, formData);
 

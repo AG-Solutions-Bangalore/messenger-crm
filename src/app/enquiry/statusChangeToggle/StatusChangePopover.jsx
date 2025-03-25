@@ -23,6 +23,7 @@ import {
 import BASE_URL from "@/config/BaseUrl";
 import { useToast } from "@/hooks/use-toast";
 import { ButtonConfig } from "@/config/ButtonConfig";
+import useApiToken from "@/components/common/UseToken";
 
 const StatusChangePopover = ({ enquiryId, onStatusUpdate }) => {
   const [open, setOpen] = useState(false);
@@ -31,6 +32,8 @@ const StatusChangePopover = ({ enquiryId, onStatusUpdate }) => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const { toast } = useToast();
+  const token = useApiToken();
+
   const handleStatusChange = async () => {
     if (!status) {
       toast({
@@ -44,7 +47,6 @@ const StatusChangePopover = ({ enquiryId, onStatusUpdate }) => {
     setIsSubmitting(true);
 
     try {
-      const token = localStorage.getItem("token");
       const response = await axios.put(
         `${BASE_URL}/api/panel-update-enquiry-status/${enquiryId}`,
         { enquiry_company_status: status },

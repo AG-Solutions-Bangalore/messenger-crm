@@ -16,6 +16,7 @@ import axios from "axios";
 import BASE_URL from "@/config/BaseUrl";
 import { Loader2 } from "lucide-react";
 import { ButtonConfig } from "@/config/ButtonConfig";
+import useApiToken from "@/components/common/UseToken";
 
 const Download = () => {
   const [formData, setFormData] = useState({
@@ -25,6 +26,8 @@ const Download = () => {
   });
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const token = useApiToken();
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -41,7 +44,6 @@ const Download = () => {
   const { data: statusData, isLoading: statusLoading } = useQuery({
     queryKey: ["companyStatus"],
     queryFn: async () => {
-      const token = localStorage.getItem("token");
       const response = await axios.get(
         `${BASE_URL}/api/panel-fetch-company-status`,
         {
@@ -75,7 +77,6 @@ const Download = () => {
       return;
     }
 
-    const token = localStorage.getItem("token");
     try {
       const response = await axios.post(
         `${BASE_URL}/api/panel-download-upload-data-report`,

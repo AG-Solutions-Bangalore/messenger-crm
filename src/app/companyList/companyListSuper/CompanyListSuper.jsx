@@ -32,12 +32,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import axios from "axios";
-import {
-  ArrowUpDown,
-  ChevronDown,
-  Eye,
-  Search
-} from "lucide-react";
+import { ArrowUpDown, ChevronDown, Eye, Search } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -47,8 +42,12 @@ import LoaderComponent, {
   ErrorLoaderComponent,
 } from "@/components/common/LoaderComponent";
 import CompanyListToogle from "@/components/toggle/CompanyListToogle";
+import useApiToken from "@/components/common/UseToken";
+import { encryptId } from "@/components/common/Encryption";
 
 const CompanyListSuper = () => {
+  const token = useApiToken();
+
   const {
     data: companies,
     isLoading,
@@ -57,7 +56,6 @@ const CompanyListSuper = () => {
   } = useQuery({
     queryKey: ["companies"],
     queryFn: async () => {
-      const token = localStorage.getItem("token");
       const response = await axios.get(
         `${BASE_URL}/api/panel-fetch-company-list`,
         {
@@ -83,7 +81,7 @@ const CompanyListSuper = () => {
       cell: ({ row }) => <div>{row.getValue("id")}</div>,
     },
     {
-      accessorKey: "company_type",
+      accessorKey: "company_name",
       header: ({ column }) => (
         <Button
           variant="ghost"
@@ -93,7 +91,7 @@ const CompanyListSuper = () => {
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
-      cell: ({ row }) => <div>{row.getValue("company_type")}</div>,
+      cell: ({ row }) => <div>{row.getValue("company_name")}</div>,
     },
     {
       accessorKey: "company_type",
@@ -156,8 +154,15 @@ const CompanyListSuper = () => {
                   <Button
                     variant="ghost"
                     size="icon"
+                    // onClick={() => {
+                    //   navigate(`/company-list/view/${viewId}`);
+                    // }}
                     onClick={() => {
-                      navigate(`/company-list/view/${viewId}`);
+                      const encryptedId = encryptId(viewId);
+
+                      navigate(
+                        `/company-list/view/${encodeURIComponent(encryptedId)}`
+                      );
                     }}
                   >
                     <Eye />

@@ -17,6 +17,8 @@ import { ContextPanel } from "@/lib/ContextPanel";
 import BASE_URL from "@/config/BaseUrl";
 import logo from "../../assets/logo.png";
 import { ButtonConfig } from "@/config/ButtonConfig";
+import { loginSuccess } from "@/redux/authSlice";
+import { useDispatch } from "react-redux";
 export default function LoginAuth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -24,7 +26,7 @@ export default function LoginAuth() {
   const [loadingMessage, setLoadingMessage] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
-
+  const dispatch = useDispatch();
   const loadingMessages = [
     "Setting things up for you...",
     "Checking your credentials...",
@@ -56,12 +58,11 @@ export default function LoginAuth() {
     const formData = new FormData();
     formData.append("mobile", email);
     formData.append("password", password);
-    // formData.append("device_id", '123353366');
 
     try {
       const res = await axios.post(`${BASE_URL}/api/panel-login`, formData);
-      console.log("ress",res)
-      if (res?.data?.code == 200) {
+
+      if (res?.data?.code === 200) {
         if (!res?.data?.data?.user || !res?.data?.data?.token) {
           console.warn("⚠️ Login failed: Token missing in response");
           toast.error("Login Failed: No token received.");
@@ -69,31 +70,31 @@ export default function LoginAuth() {
           return;
         }
 
-        const  UserInfo  = res.data?.data;
-        console.log("userinfo",UserInfo)
-        console.log("Saving user details to local storage...");
-        localStorage.setItem("token", UserInfo.token);
-        localStorage.setItem("id", UserInfo.user.id);
-        localStorage.setItem("name", UserInfo.user.name);
-        localStorage.setItem("userType", UserInfo.user.user_type);
-        localStorage.setItem("email", UserInfo.user.email);
+        const userInfo = res.data.data;
+        const userData = {
+          token: userInfo.token,
+          id: userInfo.user.id,
+          name: userInfo.user.name,
+          user_type: userInfo.user.user_type,
+          email: userInfo.user.email,
+        };
 
-        console.log("✅ Login successful! Redirecting to /home...");
+        dispatch(loginSuccess(userData));
         navigate("/home");
       } else {
         console.warn("⚠️ Unexpected API response:", res);
         toast.error("Login Failed: Unexpected response.");
       }
     } catch (error) {
-      console.error("❌ Login Error:", error.res?.data || error.message);
+      console.error("Login Error:", error);
 
       toast({
         variant: "destructive",
         title: "Login Failed",
         description:
-          error.res?.data?.message || "Please check your credentials.",
+          error.response?.data?.message || "Please check your credentials.",
       });
-
+    } finally {
       setIsLoading(false);
     }
   };
@@ -118,21 +119,47 @@ export default function LoginAuth() {
           className={`w-72 md:w-80 max-w-md ${ButtonConfig.loginBackground} ${ButtonConfig.loginText}`}
         >
           <CardHeader>
-          <div className="font-semibold flex items-center space-x-2">
-          <div className="font-semibold flex items-center space-x-2">
-            <div className="flex items-center">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-yellow-800">
-                <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+            <div className="font-semibold flex items-center space-x-2">
+              <div className="font-semibold flex items-center space-x-2">
+                <div className="flex items-center">
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="text-yellow-800"
+                  >
+                    <path
+                      d="M12 2L2 7L12 12L22 7L12 2Z"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M2 17L12 22L22 17"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M2 12L12 17L22 12"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-2xl font-bold text-yellow-900 leading-tight">
+                    Messenger
+                  </span>
+                </div>
+              </div>
             </div>
-            <div className="flex flex-col">
-              <span className="text-2xl font-bold text-yellow-900 leading-tight">Messenger</span>
-
-            </div>
-            </div>
-          </div>
             <CardTitle
               className={`text-xl text-center${ButtonConfig.loginText}`}
             >

@@ -1,3 +1,4 @@
+import useApiToken from "@/components/common/UseToken";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -17,9 +18,10 @@ import { useState } from "react";
 const ChangePassword = ({ open, setOpen }) => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState();
+  const token = useApiToken();
 
   const [formData, setFormData] = useState({
-    mobile:"",
+    mobile: "",
     currentPassword: "",
     newPassword: "",
   });
@@ -58,7 +60,6 @@ const ChangePassword = ({ open, setOpen }) => {
 
     setIsLoading(true);
     try {
-      const token = localStorage.getItem("token");
       const response = await axios.post(
         `${BASE_URL}/api/panel-change-password`,
         formData,
@@ -123,7 +124,6 @@ const ChangePassword = ({ open, setOpen }) => {
                 }
               }}
               maxLength={10}
-           
             />
           </div>
           <div className="grid gap-2">

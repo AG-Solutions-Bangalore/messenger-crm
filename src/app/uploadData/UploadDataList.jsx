@@ -53,6 +53,8 @@ import DeleteAllFollowUpData from "./DeleteAllFollowUpData";
 import LoaderComponent, {
   ErrorLoaderComponent,
 } from "@/components/common/LoaderComponent";
+import useApiToken from "@/components/common/UseToken";
+import { useSelector } from "react-redux";
 
 const UploadDataList = () => {
   const [activeTab, setActiveTab] = useState("all");
@@ -63,7 +65,8 @@ const UploadDataList = () => {
     useState(false);
   const [followupDeleteallDialogOpen, setFollowupDeleteallDialogOpen] =
     useState(false);
-
+  const token = useApiToken();
+  const userType = useSelector((state) => state.auth.user_type);
   const [formData, setFormData] = useState({
     data_created: "",
     data_status: "",
@@ -83,7 +86,6 @@ const UploadDataList = () => {
     }));
   };
   const queryClient = useQueryClient();
-  const userType = localStorage.getItem("userType");
   const {
     data: uploadData,
     isLoading,
@@ -92,7 +94,6 @@ const UploadDataList = () => {
   } = useQuery({
     queryKey: ["uploadData"],
     queryFn: async () => {
-      const token = localStorage.getItem("token");
       const response = await axios.get(
         `${BASE_URL}/api/panel-fetch-upload-data`,
         {
@@ -107,7 +108,6 @@ const UploadDataList = () => {
   const { data: statusData } = useQuery({
     queryKey: ["companyStatus"],
     queryFn: async () => {
-      const token = localStorage.getItem("token");
       const response = await axios.get(
         `${BASE_URL}/api/panel-fetch-company-status`,
         {

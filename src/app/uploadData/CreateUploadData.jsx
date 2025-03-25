@@ -1,35 +1,35 @@
-import React, { useState, useEffect } from "react";
+import useApiToken from "@/components/common/UseToken";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
-import {
-  SquarePlus,
-  Loader2,
-  Download,
-  Upload,
-  FileSpreadsheet,
-  FileImage,
-} from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
-import axios from "axios";
 import BASE_URL from "@/config/BaseUrl";
-import { Card, CardContent } from "@/components/ui/card";
 import { ButtonConfig } from "@/config/ButtonConfig";
+import { useToast } from "@/hooks/use-toast";
+import axios from "axios";
+import {
+  Download,
+  FileImage,
+  FileSpreadsheet,
+  SquarePlus,
+  Upload,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 
 const CreateUploadData = ({ onSuccess }) => {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const token = useApiToken();
 
   const [formData, setFormData] = useState({
     data_type: "Individual",
@@ -94,7 +94,6 @@ const CreateUploadData = ({ onSuccess }) => {
     data.append("message", formData.message);
 
     try {
-      const token = localStorage.getItem("token");
       const response = await axios.post(
         `${BASE_URL}/api/panel-create-upload-data`,
         data,
@@ -145,7 +144,10 @@ const CreateUploadData = ({ onSuccess }) => {
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-md bg-gradient-to-b from-white to-gray-50 shadow-lg border-yellow-200 p-0">
+      <DialogContent
+        className="sm:max-w-md bg-gradient-to-b from-white to-gray-50 shadow-lg border-yellow-200 p-0"
+        aria-describedby={undefined}
+      >
         <DialogHeader className="bg-yellow-50 px-4 pt-4 pb-2 border-b border-yellow-100">
           <DialogTitle className="text-lg font-semibold text-gray-800 flex items-center">
             <Upload className="h-4 w-4 mr-2 text-yellow-500" />

@@ -34,8 +34,11 @@ import { ArrowUpDown, ChevronDown, Search } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import StatusChangePopover from "../statusChangeToggle/StatusChangePopover";
+import useApiToken from "@/components/common/UseToken";
 
 const PendingList = () => {
+  const token = useApiToken();
+
   const {
     data: enquiries,
     isLoading,
@@ -44,7 +47,6 @@ const PendingList = () => {
   } = useQuery({
     queryKey: ["enquiries"],
     queryFn: async () => {
-      const token = localStorage.getItem("token");
       const response = await axios.get(
         `${BASE_URL}/api/panel-fetch-enquiry-list-pending`,
         {
@@ -154,7 +156,6 @@ const PendingList = () => {
   if (isError) {
     return (
       <Page>
-   
         <ErrorLoaderComponent data="Pending Data" onClick={() => refetch()} />
       </Page>
     );

@@ -39,20 +39,23 @@ import { useState } from "react";
 import { useParams } from "react-router-dom";
 import CreateUserDialog from "../commonCreateDialog/CreateUserDialog";
 import EditUserDialog from "../companyEditDialog/EditUserDialog";
+import useApiToken from "@/components/common/UseToken";
+import { decryptId } from "@/components/common/Encryption";
 // Import the new dialog component
 
 const CompanySuperView = () => {
   const { id } = useParams();
+  const decryptid = decryptId(id);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const token = useApiToken();
 
   // Fetch company data by ID
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ["company", id],
+    queryKey: ["company", decryptid],
     queryFn: async () => {
-      const token = localStorage.getItem("token");
       const response = await axios.get(
-        `${BASE_URL}/api/panel-fetch-company-by-id/${id}`,
+        `${BASE_URL}/api/panel-fetch-company-by-id/${decryptid}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }

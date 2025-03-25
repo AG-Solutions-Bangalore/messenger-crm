@@ -41,16 +41,17 @@ import EditUserDialog from "../companyEditDialog/EditUserDialog";
 import LoaderComponent, {
   ErrorLoaderComponent,
 } from "@/components/common/LoaderComponent";
+import useApiToken from "@/components/common/UseToken";
 
 const CompanyUserView = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const token = useApiToken();
 
   // Fetch company data by ID
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["company"],
     queryFn: async () => {
-      const token = localStorage.getItem("token");
       const response = await axios.get(
         `${BASE_URL}/api/panel-fetch-company-by-id/1`,
         {

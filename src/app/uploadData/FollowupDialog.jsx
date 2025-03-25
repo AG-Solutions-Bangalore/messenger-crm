@@ -23,18 +23,19 @@ import axios from "axios";
 import BASE_URL from "@/config/BaseUrl";
 import moment from "moment";
 import { ButtonConfig } from "@/config/ButtonConfig";
+import useApiToken from "@/components/common/UseToken";
 
 const FollowupDialog = ({ open, onOpenChange, followupId, onSuccess }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
   const { toast } = useToast();
+  const token = useApiToken();
 
   // Fetch company status for dropdown
   const { data: statusData, isLoading: statusLoading } = useQuery({
     queryKey: ["companyStatus"],
     queryFn: async () => {
-      const token = localStorage.getItem("token");
       const response = await axios.get(
         `${BASE_URL}/api/panel-fetch-company-status`,
         {
@@ -57,7 +58,6 @@ const FollowupDialog = ({ open, onOpenChange, followupId, onSuccess }) => {
 
     setIsLoading(true);
     try {
-      const token = localStorage.getItem("token");
       const response = await axios.put(
         `${BASE_URL}/api/panel-update-followup/${followupId}`,
         {
@@ -107,7 +107,7 @@ const FollowupDialog = ({ open, onOpenChange, followupId, onSuccess }) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle>Update Follow-up</DialogTitle>
         </DialogHeader>

@@ -51,12 +51,14 @@ import { ChevronDown, Loader2, Search, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import CreateCompanyStatus from "./CreateCompanyStatus";
+import useApiToken from "@/components/common/UseToken";
 
 const CompanyStatusList = () => {
   const { toast } = useToast();
   const [deleteId, setDeleteId] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const token = useApiToken();
 
   const {
     data: companyStatus,
@@ -66,7 +68,6 @@ const CompanyStatusList = () => {
   } = useQuery({
     queryKey: ["companyStatus"],
     queryFn: async () => {
-      const token = localStorage.getItem("token");
       const response = await axios.get(
         `${BASE_URL}/api/panel-fetch-company-status`,
         {
@@ -83,7 +84,6 @@ const CompanyStatusList = () => {
 
     setIsDeleting(true);
     try {
-      const token = localStorage.getItem("token");
       const response = await axios.delete(
         `${BASE_URL}/api/panel-delete-company-status/${deleteId}`,
         {

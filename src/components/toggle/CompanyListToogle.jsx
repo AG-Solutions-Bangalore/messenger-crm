@@ -3,18 +3,18 @@ import { RefreshCcw } from "lucide-react";
 import axios from "axios";
 import { useToast } from "@/hooks/use-toast";
 import BASE_URL from "@/config/BaseUrl";
+import useApiToken from "../common/UseToken";
 
 const CompanyListToogle = ({ initialStatus, companyId, onStatusChange }) => {
   const [status, setStatus] = useState(initialStatus);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-
+  const token = useApiToken();
   const handleToggle = async () => {
     setIsLoading(true);
     const newStatus = status === "Active" ? "Inactive" : "Active";
 
     try {
-      const token = localStorage.getItem("token");
       const response = await axios.put(
         `${BASE_URL}/api/panel-update-company-status/${companyId}`,
         { company_status: newStatus },
