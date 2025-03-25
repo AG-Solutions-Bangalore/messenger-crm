@@ -1,5 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import BASE_URL from "@/config/BaseUrl";
+import useApiToken from "@/components/common/UseToken";
 
 const STALE_TIME = 5 * 60 * 1000;
 const CACHE_TIME = 30 * 60 * 1000;
@@ -19,7 +20,8 @@ const fetchData = async (endpoint, token) => {
 };
 
 const createQueryConfig = (queryKey, endpoint, options = {}) => {
-  const token = localStorage.getItem("token");
+  const token = useApiToken();
+
   return {
     queryKey,
     queryFn: () => fetchData(endpoint, token),

@@ -20,8 +20,9 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { ButtonConfig } from "@/config/ButtonConfig";
+import useApiToken from "@/components/common/UseToken";
 
-const EditCompanyStatus = ({companyStatusId}) => {
+const EditCompanyStatus = ({ companyStatusId }) => {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
@@ -32,15 +33,18 @@ const EditCompanyStatus = ({companyStatusId}) => {
     companyStatus: "",
   });
   const [originalData, setOriginalData] = useState(null);
-  
+  const token = useApiToken();
+
   // Fetch state data
   const fetchStateData = async () => {
     setIsFetching(true);
     try {
-      const token = localStorage.getItem("token");
-      const response = await axios.get(`${BASE_URL}/api/panel-fetch-company-status-by-id/${companyStatusId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await axios.get(
+        `${BASE_URL}/api/panel-fetch-company-status-by-id/${companyStatusId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
       // Fix: Access the first item in the companyStatus array
       const companyStatusData = response.data.companyStatus[0] || {};
@@ -93,7 +97,6 @@ const EditCompanyStatus = ({companyStatusId}) => {
     }
     setIsLoading(true);
     try {
-      const token = localStorage.getItem("token");
       const response = await axios.put(
         `${BASE_URL}/api/panel-update-companys-status/${companyStatusId}`,
         formData,
@@ -120,7 +123,8 @@ const EditCompanyStatus = ({companyStatusId}) => {
     } catch (error) {
       toast({
         title: "Error",
-        description: error.response?.data?.message || "Failed to update Company Status",
+        description:
+          error.response?.data?.message || "Failed to update Company Status",
         variant: "destructive",
       });
     } finally {
@@ -130,8 +134,7 @@ const EditCompanyStatus = ({companyStatusId}) => {
 
   // Check if there are changes
   const hasChanges =
-    originalData &&
-    formData.companyStatus !== originalData.companyStatus;
+    originalData && formData.companyStatus !== originalData.companyStatus;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -207,7 +210,7 @@ const EditCompanyStatus = ({companyStatusId}) => {
                   )}
                 </div>
               </div>
-              
+
               {hasChanges && (
                 <Alert className="bg-blue-50 border-blue-200 mt-2">
                   <AlertCircle className="h-4 w-4 text-blue-500" />

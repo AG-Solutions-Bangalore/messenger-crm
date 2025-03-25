@@ -1,5 +1,15 @@
 import { ChevronsUpDown, Key, LogOut } from "lucide-react";
 
+import ChangePassword from "@/app/auth/ChangePassword";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -15,19 +25,34 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { useNavigate } from "react-router-dom";
-import ChangePassword from "@/app/auth/ChangePassword";
+import { logout } from "@/redux/authSlice";
+import { persistor } from "@/redux/store";
 import { useState } from "react";
-
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { Button } from "./ui/button";
 export function NavUser({ user }) {
   const [open, setOpen] = useState(false);
-
+  const dispatch = useDispatch();
   const { isMobile } = useSidebar();
   const navigate = useNavigate();
-  const user_position = localStorage.getItem("user_position");
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate("/");
+  const [islogout, setLogout] = useState(false);
+  const [dialog, setDialog] = useState(false);
+  const user_position = useSelector((state) => state.auth.user_position);
+  const handleLogout = async () => {
+    setLogout(true);
+    try {
+      await persistor.flush();
+      localStorage.clear();
+      dispatch(logout());
+      navigate("/");
+      setTimeout(() => persistor.purge(), 1000);
+    } catch (error) {
+      console.error("Logout failed:", error);
+    } finally {
+      setLogout(false);
+      setDialog(false);
+    }
   };
 
   const splitUser = user.name;
@@ -87,7 +112,11 @@ export function NavUser({ user }) {
 
                 <span className=" cursor-pointer">Change Password</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleLogout}>
+              <DropdownMenuItem
+                onClick={() => {
+                  setDialog(true);
+                }}
+              >
                 <LogOut />
 
                 <span className=" cursor-pointer">Log out</span>
@@ -97,6 +126,32 @@ export function NavUser({ user }) {
         </SidebarMenuItem>
       </SidebarMenu>
       <ChangePassword setOpen={setOpen} open={open} />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={dialog} onOpenChange={setDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Logout</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure need to logout
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <Button
+              onClick={(e) => {
+                e.preventDefault();
+                handleLogout();
+              }}
+              disabled={islogout}
+              loading={islogout}
+              className="bg-red-500 hover:bg-red-600 text-white"
+            >
+              {islogout ? <>Logouting...</> : "Logout"}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

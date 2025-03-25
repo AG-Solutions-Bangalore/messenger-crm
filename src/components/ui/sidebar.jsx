@@ -50,7 +50,6 @@ const SidebarProvider = React.forwardRef((
   const isMobile = useIsMobile()
   const [openMobile, setOpenMobile] = React.useState(false)
 
-  // Retrieve the sidebar state from localStorage on initial load
   const [initialOpen] = React.useState(() => {
     const storedState = localStorage.getItem(SIDEBAR_COOKIE_NAME)
     return storedState ? JSON.parse(storedState) : defaultOpen

@@ -1,3 +1,4 @@
+import useApiToken from "@/components/common/UseToken";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -22,6 +23,8 @@ const CreateCompanyStatus = () => {
   });
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const token = useApiToken();
+
   const { pathname } = useLocation();
   const handleSubmit = async () => {
     const missingFields = [];
@@ -46,7 +49,6 @@ const CreateCompanyStatus = () => {
     }
     setIsLoading(true);
     try {
-      const token = localStorage.getItem("token");
       const response = await axios.post(
         `${BASE_URL}/api/panel-create-company-status`,
         formData,

@@ -34,8 +34,11 @@ import LoaderComponent, {
   ErrorLoaderComponent,
 } from "@/components/common/LoaderComponent";
 import { ButtonConfig } from "@/config/ButtonConfig";
+import useApiToken from "@/components/common/UseToken";
 
 const UserList = () => {
+  const token = useApiToken();
+
   const {
     data: enquiries,
     isLoading,
@@ -44,7 +47,6 @@ const UserList = () => {
   } = useQuery({
     queryKey: ["enquiries"],
     queryFn: async () => {
-      const token = localStorage.getItem("token");
       const response = await axios.get(
         `${BASE_URL}/api/panel-fetch-enquiry-list-user`,
         {

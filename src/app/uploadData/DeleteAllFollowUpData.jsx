@@ -1,3 +1,4 @@
+import useApiToken from "@/components/common/UseToken";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -33,11 +34,12 @@ const DeleteAllFollowUpData = ({
   handleStatusChange,
   handleInputChange,
 }) => {
+  const token = useApiToken();
+
   const [isLoading, setIsLoading] = useState(false);
   const { data: statusData, isLoading: statusLoading } = useQuery({
     queryKey: ["companyStatus"],
     queryFn: async () => {
-      const token = localStorage.getItem("token");
       const response = await axios.get(
         `${BASE_URL}/api/panel-fetch-company-status`,
         {
@@ -53,8 +55,6 @@ const DeleteAllFollowUpData = ({
     setIsLoading(true);
 
     try {
-      const token = localStorage.getItem("token");
-
       if (!formData.data_created) {
         toast({
           title: "Error",
@@ -64,7 +64,6 @@ const DeleteAllFollowUpData = ({
         setIsLoading(false);
         return;
       }
-      console.log(formData, "formData");
       const response = await axios.post(
         `${BASE_URL}/api/panel-delete-upload-data-all`,
         formData,
@@ -108,7 +107,7 @@ const DeleteAllFollowUpData = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle>Are you sure?</DialogTitle>
         </DialogHeader>

@@ -14,7 +14,7 @@ const AppProvider = ({ children }) => {
         const response = await fetch(`${BASE_URL}/api/panel-check-status`);
         const data = await response.json();
 
-        if (data.success === "ok") {
+        if (!data.success === "ok") {
           setStatusCheck("ok");
         } else {
           navigate("/maintenance");

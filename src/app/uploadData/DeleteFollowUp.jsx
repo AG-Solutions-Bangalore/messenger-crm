@@ -1,3 +1,4 @@
+import useApiToken from "@/components/common/UseToken";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -20,14 +21,13 @@ const DeleteFollowUp = ({
   followupdeleteId,
 }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const token = useApiToken();
 
   const { toast } = useToast();
 
   const handleSubmit = async () => {
     setIsLoading(true);
     try {
-      const token = localStorage.getItem("token");
-
       const response = await axios.delete(
         `${BASE_URL}/api/panel-delete-upload-data/${followupdeleteId}`,
         {
@@ -66,7 +66,7 @@ const DeleteFollowUp = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle>Are you sure?</DialogTitle>
         </DialogHeader>

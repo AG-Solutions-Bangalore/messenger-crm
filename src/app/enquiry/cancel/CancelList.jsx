@@ -36,8 +36,11 @@ import StatusChangePopover from "../statusChangeToggle/StatusChangePopover";
 import LoaderComponent, {
   ErrorLoaderComponent,
 } from "@/components/common/LoaderComponent";
+import useApiToken from "@/components/common/UseToken";
 
 const CancelList = () => {
+  const token = useApiToken();
+
   const {
     data: enquiries,
     isLoading,
@@ -46,7 +49,6 @@ const CancelList = () => {
   } = useQuery({
     queryKey: ["enquiries"],
     queryFn: async () => {
-      const token = localStorage.getItem("token");
       const response = await axios.get(
         `${BASE_URL}/api/panel-fetch-enquiry-list-cancel`,
         {

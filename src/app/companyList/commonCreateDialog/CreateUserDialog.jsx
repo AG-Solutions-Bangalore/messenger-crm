@@ -18,8 +18,10 @@ import { Loader2, SquarePlus } from "lucide-react";
 
 import { useLocation } from "react-router-dom";
 import { ButtonConfig } from "@/config/ButtonConfig";
+import useApiToken from "@/components/common/UseToken";
 
 const CreateUserDialog = ({ onSuccess }) => {
+  const token = useApiToken();
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -63,7 +65,6 @@ const CreateUserDialog = ({ onSuccess }) => {
     }
 
     try {
-      const token = localStorage.getItem("token");
       const response = await axios.post(
         `${BASE_URL}/api/panel-create-user`,
         formData,
@@ -123,7 +124,7 @@ const CreateUserDialog = ({ onSuccess }) => {
         ) : null}
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle>Create New User</DialogTitle>
         </DialogHeader>
