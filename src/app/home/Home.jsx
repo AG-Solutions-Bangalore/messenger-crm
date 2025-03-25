@@ -1,36 +1,45 @@
-import React from 'react';
-import { useQuery } from '@tanstack/react-query';
-import axios from 'axios';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
-import Page from '../dashboard/page';
+import React from "react";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
+import Page from "../dashboard/page";
+import LoaderComponent, {
+  ErrorLoaderComponent,
+} from "@/components/common/LoaderComponent";
 
-const BASE_URL = 'http://agsdemo.in/emapi/public';
+const BASE_URL = "http://agsdemo.in/emapi/public";
 
 const Home = () => {
-  const {
-    data,
-    isLoading,
-    isError,
-    refetch,
-  } = useQuery({
-    queryKey: ['dashboardData'],
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: ["dashboardData"],
     queryFn: async () => {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${BASE_URL}/api/panel-fetch-dashboard`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const token = localStorage.getItem("token");
+      const response = await axios.get(
+        `${BASE_URL}/api/panel-fetch-dashboard`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       return response.data;
     },
   });
 
+  // Render loading state
   if (isLoading) {
     return (
       <Page>
-        <div className="flex justify-center items-center h-screen">
-          <Loader2 className="h-6 w-6 animate-spin text-primary" />
-        </div>
+        <LoaderComponent data={"Dashboard Data"} />
+      </Page>
+    );
+  }
+
+  // Render error state
+  if (isError) {
+    return (
+      <Page>
+        <ErrorLoaderComponent data="Dashboard Data" onClick={() => refetch()} />
       </Page>
     );
   }
@@ -41,9 +50,16 @@ const Home = () => {
         <div className="flex justify-center items-center h-screen">
           <Card className="w-full max-w-sm shadow-md">
             <CardContent className="pt-6">
-              <p className="text-center text-destructive mb-4">Failed to load dashboard data</p>
+              <p className="text-center text-destructive mb-4">
+                Failed to load dashboard data
+              </p>
               <div className="flex justify-center">
-                <Button onClick={() => refetch()} size="sm" variant="outline" className="text-xs">
+                <Button
+                  onClick={() => refetch()}
+                  size="sm"
+                  variant="outline"
+                  className="text-xs"
+                >
                   Retry
                 </Button>
               </div>

@@ -5,6 +5,7 @@ import {
   Blocks,
   Command,
   File,
+  FileDown,
   Frame,
   GalleryVerticalEnd,
   Map,
@@ -107,7 +108,12 @@ export function AppSidebar({ ...props }) {
         icon: Package,
         isActive: false,
       },
-      
+      {
+        title: "Download",
+        url: "/download",
+        icon: FileDown,
+        isActive: false,
+      },
     ],
   };
 

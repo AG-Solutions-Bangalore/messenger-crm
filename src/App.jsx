@@ -8,12 +8,6 @@ import DisabledRightClick from "./components/common/DisabledRightClick";
 import AppRoutes from "./routes/AppRoutes";
 
 function App() {
-  // const navigate = useNavigate();
-  // const time = localStorage.getItem("token-expire-time");
-  // const handleLogout = () => {
-  //   localStorage.clear();
-  //   navigate("/");
-  // };
   return (
     <>
       {/* <DisabledRightClick /> */}

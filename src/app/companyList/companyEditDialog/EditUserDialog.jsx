@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,9 +20,14 @@ import {
 
 import BASE_URL from "@/config/BaseUrl";
 import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { ButtonConfig } from "@/config/ButtonConfig";
 
 const EditUserDialog = ({ open, onOpenChange, selectedUser, onSuccess }) => {
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+
   const [formData, setFormData] = React.useState({
     mobile: "",
     email: "",
@@ -59,11 +64,32 @@ const EditUserDialog = ({ open, onOpenChange, selectedUser, onSuccess }) => {
 
   // Handle form submission
   const handleSubmit = async () => {
+    setIsLoading(true);
+
+    let errors = [];
+    if (!formData.mobile) errors.push("Mobile is required.");
+    if (!formData.email) errors.push("Email is required.");
+    if (!formData.status) errors.push("Status is required.");
+    if (errors.length > 0) {
+      toast({
+        title: "Error",
+        description: (
+          <>
+            {errors.map((err, index) => (
+              <div key={index}>{err}</div>
+            ))}
+          </>
+        ),
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
     if (!selectedUser) return;
 
     try {
       const token = localStorage.getItem("token");
-      await axios.put(
+      const response = await axios.put(
         `${BASE_URL}/api/panel-update-user/${selectedUser.id}`,
         formData,
         {
@@ -71,20 +97,36 @@ const EditUserDialog = ({ open, onOpenChange, selectedUser, onSuccess }) => {
         }
       );
 
-      toast({
-        title: "Success",
-        description: "User updated successfully",
-      });
+      if (response?.data?.code === 200) {
+        toast({
+          title: "Success",
+          description: response?.data?.msg || "User updated successfully!",
+        });
 
-      onOpenChange(false);
-      if (onSuccess) onSuccess();
-    } catch (error) {
+        setFormData({ name: "", mobile: "", email: "" });
+
+        onOpenChange(false);
+        if (onSuccess) onSuccess();
+
+        // setOpen(false);
+      } else if (response?.data?.code === 400) {
+        toast({
+          title: "Error",
+          description: response?.data?.msg || "Duplicate User!",
+          variant: "destructive",
+        });
+      } else {
+        throw new Error(response?.data?.msg || "Failed to updated user.");
+      }
+    } catch (err) {
       toast({
         title: "Error",
-        description: "Failed to update user",
+        description: err.response?.data?.msg || "Failed to updated user.",
         variant: "destructive",
       });
-      console.error("Error updating user:", error);
+      console.error("Error updating user:", err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -92,14 +134,14 @@ const EditUserDialog = ({ open, onOpenChange, selectedUser, onSuccess }) => {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Edit User 1</DialogTitle>
-          <DialogDescription>Update user information below</DialogDescription>
+          <DialogTitle>Edit User</DialogTitle>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <label htmlFor="mobile" className="text-right">
-              Mobile
-            </label>
+        <div className="space-y-3">
+          <div>
+            <Label htmlFor="mobile">
+              Mobile <span className="text-red-500">*</span>
+            </Label>
+
             <Input
               id="mobile"
               name="mobile"
@@ -116,10 +158,11 @@ const EditUserDialog = ({ open, onOpenChange, selectedUser, onSuccess }) => {
               }}
             />
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <label htmlFor="email" className="text-right">
-              Email
-            </label>
+          <div>
+            <Label htmlFor="email">
+              Email<span className="text-red-500">*</span>
+            </Label>
+
             <Input
               id="email"
               name="email"
@@ -129,10 +172,11 @@ const EditUserDialog = ({ open, onOpenChange, selectedUser, onSuccess }) => {
               className="col-span-3"
             />
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <label htmlFor="status" className="text-right">
-              Status
-            </label>
+          <div>
+            <Label htmlFor="status">
+              Status<span className="text-red-500">*</span>
+            </Label>
+
             <Select value={formData.status} onValueChange={handleStatusChange}>
               <SelectTrigger className="col-span-3">
                 <SelectValue placeholder="Select status" />
@@ -145,11 +189,13 @@ const EditUserDialog = ({ open, onOpenChange, selectedUser, onSuccess }) => {
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button type="submit" onClick={handleSubmit}>
-            Save Changes
+          <Button
+            onClick={handleSubmit}
+            disabled={isLoading}
+            loading={isLoading}
+            className={`${ButtonConfig.backgroundColor} ${ButtonConfig.hoverBackgroundColor} ${ButtonConfig.textColor}`}
+          >
+            {isLoading ? <>Updatting...</> : "Update User"}
           </Button>
         </DialogFooter>
       </DialogContent>

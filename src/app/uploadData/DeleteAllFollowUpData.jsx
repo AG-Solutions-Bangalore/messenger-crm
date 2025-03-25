@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import BASE_URL from "@/config/BaseUrl";
+import { ButtonConfig } from "@/config/ButtonConfig";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
@@ -30,6 +31,7 @@ const DeleteAllFollowUpData = ({
   formData,
   setFormData,
   handleStatusChange,
+  handleInputChange,
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const { data: statusData, isLoading: statusLoading } = useQuery({
@@ -49,19 +51,20 @@ const DeleteAllFollowUpData = ({
 
   const handleSubmit = async () => {
     setIsLoading(true);
+
     try {
       const token = localStorage.getItem("token");
 
-      if (!token) {
+      if (!formData.data_created) {
         toast({
           title: "Error",
-          description: "Authentication failed. Please log in again.",
+          description: "Please select the Followup date.",
           variant: "destructive",
         });
         setIsLoading(false);
         return;
       }
-
+      console.log(formData, "formData");
       const response = await axios.post(
         `${BASE_URL}/api/panel-delete-upload-data-all`,
         formData,
@@ -77,12 +80,18 @@ const DeleteAllFollowUpData = ({
         });
         onSuccess();
         onOpenChange(false);
-      } else {
+        setFormData({
+          data_created: "",
+          data_status: "",
+        });
+      } else if (response?.data?.code === 400) {
         toast({
           title: "Error",
-          description: response?.data?.msg || "Failed to delete follow-up.",
+          description: response?.data?.msg || "Duplicate User!",
           variant: "destructive",
         });
+      } else {
+        throw new Error(response?.data?.msg || "Failed to delete follow-up.");
       }
     } catch (error) {
       toast({
@@ -106,21 +115,12 @@ const DeleteAllFollowUpData = ({
         This action cannot be undone. This will permanently delete the selected
         company status.{" "}
         <div className="space-y-3">
-          <div>
-            <label htmlFor="data_created" className="text-right">
-              Date
-            </label>
-            <Input
-              type="date"
-              id="data_created"
-              name="data_created"
-              value={formData.data_created}
-              onChange={handleStatusChange}
-            />
-          </div>
           <div className="grid gap-2">
             <Label htmlFor="status">Status</Label>
-            <Select value={formData.data_status} onValueChange={setFormData}>
+            <Select
+              value={formData.data_status}
+              onValueChange={handleStatusChange}
+            >
               <SelectTrigger id="status">
                 <SelectValue placeholder="Select a status" />
               </SelectTrigger>
@@ -133,21 +133,28 @@ const DeleteAllFollowUpData = ({
               </SelectContent>
             </Select>
           </div>
+          <div>
+            <label htmlFor="data_created" className="text-right">
+              Date<span className="text-red-500">*</span>
+            </label>
+            <Input
+              type="date"
+              id="data_created"
+              name="data_created"
+              value={formData.data_created}
+              onChange={handleInputChange}
+              required
+            />
+          </div>
         </div>
         <DialogFooter>
           <Button
             onClick={handleSubmit}
             disabled={isLoading}
-            className="bg-yellow-500 text-black hover:bg-yellow-100"
+            loading={isLoading}
+            className={`${ButtonConfig.backgroundColor} ${ButtonConfig.hoverBackgroundColor} ${ButtonConfig.textColor}`}
           >
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Deleteting...
-              </>
-            ) : (
-              "Delete Follow-up"
-            )}
+            {isLoading ? <>Deleteting...</> : "Delete Follow-up"}
           </Button>
         </DialogFooter>
       </DialogContent>
