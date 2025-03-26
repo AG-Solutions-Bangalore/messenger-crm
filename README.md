@@ -1,10 +1,8 @@
-# Elgres Ceramic - Messenger CRM
-
-![Elgres Ceramic](./src/assets/logo.png)
+#  Messenger CRM
 
 ## 🌟 Overview
 
-**Elgres Ceramic - Messenger CRM** is a modern customer relationship management (CRM) system designed to streamline business communications, manage customer interactions, and enhance productivity.
+**Messenger CRM** is a modern customer relationship management (CRM) system designed to streamline business communications, manage customer interactions, and enhance productivity.
 
 ## 🚀 Features
 
