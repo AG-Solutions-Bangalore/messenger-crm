@@ -95,7 +95,7 @@ const CompanyListSuper = () => {
     },
     {
       accessorKey: "company_type",
-      header: "Company Type",
+      header: "Company Sort",
       cell: ({ row }) => <div>{row.getValue("company_type")}</div>,
     },
     {

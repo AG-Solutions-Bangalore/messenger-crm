@@ -52,6 +52,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import CreateCompanyStatus from "./CreateCompanyStatus";
 import useApiToken from "@/components/common/UseToken";
+import { useSelector } from "react-redux";
 
 const CompanyStatusList = () => {
   const { toast } = useToast();
@@ -129,8 +130,7 @@ const CompanyStatusList = () => {
   const [columnFilters, setColumnFilters] = useState([]);
   const [columnVisibility, setColumnVisibility] = useState({});
   const [rowSelection, setRowSelection] = useState({});
-  const [searchQuery, setSearchQuery] = useState("");
-  const navigate = useNavigate();
+  const user_Type = useSelector((state) => state.auth.user_type);
 
   // Define columns for the table
   const columns = [
@@ -144,39 +144,41 @@ const CompanyStatusList = () => {
       header: "Company Status",
       cell: ({ row }) => <div>{row.getValue("companyStatus")}</div>,
     },
-    {
-      id: "actions",
-      header: "Action",
-      cell: ({ row }) => {
-        const companyStatusId = row.original.id;
+    ...(Number(user_Type) !== 1
+      ? [
+          {
+            id: "actions",
+            header: "Action",
+            cell: ({ row }) => {
+              const companyStatusId = row.original.id;
 
-        return (
-          <div className="flex flex-row">
-            {/* <EditCompanyStatus companyStatusId={companyStatusId} /> */}
-
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      setDeleteId(companyStatusId);
-                      setDeleteDialogOpen(true);
-                    }}
-                  >
-                    <Trash2 className="text-red-500 w-5 h-5" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Delete Company Status</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-        );
-      },
-    },
+              return (
+                <div className="flex flex-row">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            setDeleteId(companyStatusId);
+                            setDeleteDialogOpen(true);
+                          }}
+                        >
+                          <Trash2 className="text-red-500 w-5 h-5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Delete Company Status</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+              );
+            },
+          },
+        ]
+      : []),
   ];
 
   // Create the table instance
@@ -266,8 +268,7 @@ const CompanyStatusList = () => {
                   ))}
               </DropdownMenuContent>
             </DropdownMenu>
-
-            <CreateCompanyStatus />
+            {Number(user_Type) !== 1 && <CreateCompanyStatus />}
           </div>
         </div>
 

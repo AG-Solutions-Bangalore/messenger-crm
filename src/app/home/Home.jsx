@@ -7,11 +7,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import Page from "../dashboard/page";
+import BASE_URL from "@/config/BaseUrl";
+import { useSelector } from "react-redux";
 
-const BASE_URL = "http://agsdemo.in/emapi/public";
 const Home = () => {
   const token = useApiToken();
-
+  const userType = useSelector((state) => state.auth.user_type);
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["dashboardData"],
     queryFn: async () => {
@@ -70,9 +71,13 @@ const Home = () => {
   }
 
   const metrics = [
-    { title: "Enquiry Pending", value: data.enquiry_pending_count },
-    { title: "Enquiry Cancel", value: data.enquiry_cancel_count },
-    { title: "Enquiry User", value: data.enquiry_user_count },
+    ...(userType === 3
+      ? [
+          { title: "Enquiry Pending", value: data.enquiry_pending_count },
+          { title: "Enquiry Cancel", value: data.enquiry_cancel_count },
+          { title: "Enquiry User", value: data.enquiry_user_count },
+        ]
+      : []),
     { title: "DataUpload Pending", value: data.DataUpload_pending_count },
     { title: "DataUpload Completed", value: data.DataUpload_completed_count },
     { title: "DataUpload Other", value: data.DataUpload_other_count },

@@ -32,10 +32,9 @@ import { NavMainUser } from "./nav-main-user";
 import { useSelector } from "react-redux";
 
 export function AppSidebar({ ...props }) {
-
-  const nameL=useSelector((state) => state.auth.name)
-  const emailL=useSelector((state) => state.auth.email)
-
+  const nameL = useSelector((state) => state.auth.name);
+  const emailL = useSelector((state) => state.auth.email);
+  const userType = useSelector((state) => state.auth.user_type);
 
   const initialData = {
     user: {
@@ -67,32 +66,56 @@ export function AppSidebar({ ...props }) {
         icon: Frame,
         isActive: false,
       },
-      {
-        title: "Enquiry",
-        url: "#",
-        isActive: false,
-        icon: Settings2,
-        items: [
-          {
-            title: "Pending",
-            url: "/enquiry/pending",
-          },
-          {
-            title: "Cancel",
-            url: "/enquiry/cancel",
-          },
-          {
-            title: "User",
-            url: "/enquiry/user",
-          },
-        ],
-      },
-      {
-        title: "Company List",
-        url: "/company-list",
-        icon: ShoppingBag,
-        isActive: false,
-      },
+      // ...(userType === 3
+      //   ? [
+      // {
+      //   title: "Enquiry",
+      //   url: "#",
+      //   isActive: false,
+      //   icon: Settings2,
+      //   items: [
+      //     {
+      //       title: "Pending",
+      //       url: "/enquiry/pending",
+      //     },
+      //     {
+      //       title: "Cancel",
+      //       url: "/enquiry/cancel",
+      //     },
+      //     {
+      //       title: "User",
+      //       url: "/enquiry/user",
+      //     },
+      //   ],
+      // },
+      // {
+      //   title: "Company List",
+      //   url: "/company-list",
+      //   icon: ShoppingBag,
+      //   isActive: false,
+      // },
+      // : []),
+      ...(userType === 3
+        ? [
+            {
+              title: "Enquiry",
+              url: "#",
+              isActive: false,
+              icon: Settings2,
+              items: [
+                { title: "Pending", url: "/enquiry/pending" },
+                { title: "Cancel", url: "/enquiry/cancel" },
+                { title: "User", url: "/enquiry/user" },
+              ],
+            },
+            {
+              title: "Company List",
+              url: "/company-list",
+              icon: ShoppingBag,
+              isActive: false,
+            },
+          ]
+        : []),
       {
         title: "User List",
         url: "/company-list-user",
