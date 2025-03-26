@@ -1,6 +1,6 @@
 # Elgres Ceramic - Messenger CRM
 
-![Elgres Ceramic](../messenger-crm/src/assets/logo.png)
+![Elgres Ceramic](./src/assets/logo.png)
 
 ## 🌟 Overview
 
@@ -30,10 +30,10 @@
 ## 📷 Screenshots
 
 🔹 **Login Page**  
-![Login](../messenger-crm/src/assets/home.png)
+![Login](./src/assets/home.png)
 
 🔹 **Uploaded Data View**  
-![Uploaded Data](../messenger-crm/src/assets/upload%20data.png)
+![Uploaded Data](./src/assets/upload%20data.png)
 
 ## 🔧 Installation
 
