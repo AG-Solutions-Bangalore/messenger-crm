@@ -31,6 +31,8 @@ import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
+import { motion } from "framer-motion";
+
 export function NavUser({ user }) {
   const [open, setOpen] = useState(false);
   const dispatch = useDispatch();
@@ -39,6 +41,7 @@ export function NavUser({ user }) {
   const [islogout, setLogout] = useState(false);
   const [dialog, setDialog] = useState(false);
   const user_position = useSelector((state) => state.auth.user_position);
+  const sidebar_state = localStorage.getItem("sidebar:state");
   const handleLogout = async () => {
     setLogout(true);
     try {
@@ -66,6 +69,13 @@ export function NavUser({ user }) {
     <>
       <SidebarMenu>
         <SidebarMenuItem>
+          {sidebar_state == "true" && (
+            <div className="flex justify-center py-2">
+              <span className="bg-gray-100 text-gray-600 text-xs font-medium px-3 py-1 rounded-full shadow-sm hover:scale-110 transition-transform">
+                Updated on: 26-Mar-2025
+              </span>
+            </div>
+          )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <SidebarMenuButton

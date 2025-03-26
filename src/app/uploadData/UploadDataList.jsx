@@ -138,7 +138,7 @@ const UploadDataList = () => {
   const columns = [
     {
       accessorKey: "index",
-      header: "Id",
+      header: "Sl.No",
       cell: ({ row }) => <div>{row.index + 1}</div>,
     },
 
@@ -244,7 +244,7 @@ const UploadDataList = () => {
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
-            {userType == "2" && (
+            {userType !== 1 && (
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -379,17 +379,18 @@ const UploadDataList = () => {
             </DropdownMenu>
 
             <CreateUploadData onSuccess={() => refetch()} />
-
-            <Button
-              variant="default"
-              className={`${ButtonConfig.backgroundColor} ${ButtonConfig.hoverBackgroundColor} ${ButtonConfig.textColor}`}
-              onClick={() => {
-                setFollowupDeleteallDialogOpen(true);
-              }}
-            >
-              <Trash2 className="w-5 h-5" />
-              Delete All Data
-            </Button>
+            {userType !== 1 && (
+              <Button
+                variant="default"
+                className={`${ButtonConfig.backgroundColor} ${ButtonConfig.hoverBackgroundColor} ${ButtonConfig.textColor}`}
+                onClick={() => {
+                  setFollowupDeleteallDialogOpen(true);
+                }}
+              >
+                <Trash2 className="w-5 h-5" />
+                Delete All Data
+              </Button>
+            )}
           </div>
         </div>
 

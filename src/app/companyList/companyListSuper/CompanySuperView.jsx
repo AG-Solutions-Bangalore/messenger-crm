@@ -41,6 +41,7 @@ import CreateUserDialog from "../commonCreateDialog/CreateUserDialog";
 import EditUserDialog from "../companyEditDialog/EditUserDialog";
 import useApiToken from "@/components/common/UseToken";
 import { decryptId } from "@/components/common/Encryption";
+import { Badge } from "@/components/ui/badge";
 // Import the new dialog component
 
 const CompanySuperView = () => {
@@ -49,7 +50,6 @@ const CompanySuperView = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const token = useApiToken();
-
   // Fetch company data by ID
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["company", decryptid],
@@ -75,7 +75,7 @@ const CompanySuperView = () => {
   const columns = [
     {
       accessorKey: "id",
-      header: "ID",
+      header: "S.No",
       cell: ({ row }) => <div>{row.getValue("id")}</div>,
     },
     {
@@ -102,6 +102,32 @@ const CompanySuperView = () => {
       cell: ({ row }) => <div>{row.getValue("email")}</div>,
     },
     {
+      accessorKey: "user_type",
+      header: "User Type",
+      cell: ({ row }) => {
+        const userType = row.getValue("user_type");
+        let label, color;
+
+        switch (userType) {
+          case 1:
+            label = "User";
+            color = "bg-red-500 text-white";
+            break;
+          case 2:
+            label = "Admin";
+            color = "bg-blue-500 text-white";
+            break;
+          default:
+            label = "Unknown";
+            color = "bg-gray-400 text-white";
+        }
+
+        return (
+          <Badge className={`px-2 py-1 rounded-md ${color}`}>{label}</Badge>
+        );
+      },
+    },
+    {
       accessorKey: "status",
       header: "Status",
       cell: ({ row }) => {
@@ -115,6 +141,7 @@ const CompanySuperView = () => {
         );
       },
     },
+
     {
       id: "actions",
       header: "Action",
@@ -220,9 +247,6 @@ const CompanySuperView = () => {
           <div className="text-2xl text-gray-800 font-[400]">
             Company Details
           </div>
-          <Button variant="outline" onClick={() => window.history.back()}>
-            Back to List
-          </Button>
         </div>
 
         {/* Company Information Card */}
@@ -232,7 +256,7 @@ const CompanySuperView = () => {
           </CardHeader>
           <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-3 py-2">
             <div>
-              <p className="text-xs text-gray-500">Company Type</p>
+              <p className="text-xs text-gray-500">Company Sort</p>
               <p className="font-medium text-sm">{company.company_type}</p>
             </div>
             <div>
@@ -361,7 +385,7 @@ const CompanySuperView = () => {
           {/* Pagination */}
           <div className="flex items-center justify-end space-x-2 py-4">
             <div className="flex-1 text-sm text-muted-foreground">
-              Total Users: {table.getFilteredRowModel().rows.length}
+              Total: {table.getFilteredRowModel().rows.length}
             </div>
             <div className="space-x-2">
               <Button

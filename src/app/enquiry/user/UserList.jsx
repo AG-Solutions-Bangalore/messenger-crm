@@ -147,7 +147,7 @@ const UserList = () => {
     <Page>
       <div className="w-full p-4">
         <div className="flex text-left text-2xl text-gray-800 font-[400]">
-          User List
+          User List 
         </div>
 
         <div className="flex items-center py-4">

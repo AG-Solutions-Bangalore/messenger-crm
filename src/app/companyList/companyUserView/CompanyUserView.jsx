@@ -42,11 +42,14 @@ import LoaderComponent, {
   ErrorLoaderComponent,
 } from "@/components/common/LoaderComponent";
 import useApiToken from "@/components/common/UseToken";
+import { useSelector } from "react-redux";
+import { Badge } from "@/components/ui/badge";
 
 const CompanyUserView = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const token = useApiToken();
+  const user_Type = useSelector((state) => state.auth.user_type);
 
   // Fetch company data by ID
   const { data, isLoading, isError, refetch } = useQuery({
@@ -100,6 +103,32 @@ const CompanyUserView = () => {
       cell: ({ row }) => <div>{row.getValue("email")}</div>,
     },
     {
+      accessorKey: "user_type",
+      header: "User Type",
+      cell: ({ row }) => {
+        const userType = row.getValue("user_type");
+        let label, color;
+
+        switch (userType) {
+          case 1:
+            label = "User";
+            color = "bg-red-500 text-white";
+            break;
+          case 2:
+            label = "Admin";
+            color = "bg-blue-500 text-white";
+            break;
+          default:
+            label = "Unknown";
+            color = "bg-gray-400 text-white";
+        }
+
+        return (
+          <Badge className={`px-2 py-1 rounded-md ${color}`}>{label}</Badge>
+        );
+      },
+    },
+    {
       accessorKey: "status",
       header: "Status",
       cell: ({ row }) => {
@@ -113,34 +142,38 @@ const CompanyUserView = () => {
         );
       },
     },
-    {
-      id: "actions",
-      header: "Action",
-      cell: ({ row }) => {
-        const user = row.original;
+    ...(Number(user_Type) !== 1
+      ? [
+          {
+            id: "actions",
+            header: "Action",
+            cell: ({ row }) => {
+              const user = row.original;
 
-        return (
-          <div className="flex flex-row">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleEditUser(user)}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Edit User</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-        );
-      },
-    },
+              return (
+                <div className="flex flex-row">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEditUser(user)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Edit User</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+              );
+            },
+          },
+        ]
+      : []),
   ];
 
   // Create the table instance for users
@@ -206,7 +239,7 @@ const CompanyUserView = () => {
           </CardHeader>
           <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-3 py-2">
             <div>
-              <p className="text-xs text-gray-500">Company Type</p>
+              <p className="text-xs text-gray-500">Company Sort</p>
               <p className="font-medium text-sm">{company.company_type}</p>
             </div>
             <div>
@@ -273,7 +306,7 @@ const CompanyUserView = () => {
                   })}
               </DropdownMenuContent>
             </DropdownMenu>
-            {company.company_no_of_user !== company.no_of_user_exist && (
+            {company.company_no_of_user > company.no_of_user_exist && (
               <CreateUserDialog onSuccess={refetch} />
             )}
           </div>
@@ -336,7 +369,7 @@ const CompanyUserView = () => {
           {/* Pagination */}
           <div className="flex items-center justify-end space-x-2 py-4">
             <div className="flex-1 text-sm text-muted-foreground">
-              Total Users: {table.getFilteredRowModel().rows.length}
+              Total: {table.getFilteredRowModel().rows.length}
             </div>
             <div className="space-x-2">
               <Button
