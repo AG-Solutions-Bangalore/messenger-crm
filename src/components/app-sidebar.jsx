@@ -98,18 +98,36 @@ export function AppSidebar({ ...props }) {
             },
           ]
         : []),
-      {
-        title: "Company Status",
-        url: "/company-status",
-        icon: Package,
-        isActive: false,
-      },
-      {
-        title: "Upload Data",
-        url: "/upload-data",
-        icon: Package,
-        isActive: false,
-      },
+      ...(userType != 1
+        ? [
+            {
+              title: "Company Status",
+              url: "/company-status",
+              icon: Package,
+              isActive: false,
+            },
+          ]
+        : []),
+      ...(userType != 1
+        ? [
+            {
+              title: "Upload Data",
+              url: "/upload-data",
+              icon: Package,
+              isActive: false,
+            },
+          ]
+        : []),
+      ...(userType == 1
+        ? [
+            {
+              title: "Pending Followup",
+              url: "/pending-followup",
+              icon: Package,
+              isActive: false,
+            },
+          ]
+        : []),
       {
         title: "Download",
         url: "/download",
