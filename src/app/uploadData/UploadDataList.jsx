@@ -98,7 +98,7 @@ const UploadDataList = () => {
         `${BASE_URL}/api/panel-fetch-upload-data`,
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
       return response.data;
     },
@@ -112,7 +112,7 @@ const UploadDataList = () => {
         `${BASE_URL}/api/panel-fetch-company-status`,
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
       return response.data.companyStatus;
     },
@@ -130,7 +130,7 @@ const UploadDataList = () => {
       return uploadData?.dataUpload || [];
     }
     return uploadData.dataUpload.filter(
-      (item) => item.data_status === activeTab
+      (item) => item.data_status === activeTab,
     );
   }, [uploadData, activeTab]);
 
@@ -140,6 +140,14 @@ const UploadDataList = () => {
       accessorKey: "index",
       header: "Sl.No",
       cell: ({ row }) => <div>{row.index + 1}</div>,
+    },
+
+    {
+      header: "Name",
+      accessorFn: (row) => row.user?.name || "-",
+      cell: ({ row }) => (
+        <div className="text-gray-800">{row.original.user?.name || "-"}</div>
+      ),
     },
 
     {
@@ -165,9 +173,9 @@ const UploadDataList = () => {
                 onClick={() => {
                   window.open(
                     `${BASE_URL}/assets/images/data_images//${row.getValue(
-                      "data_image"
+                      "data_image",
                     )}`,
-                    "_blank"
+                    "_blank",
                   );
                 }}
               >
@@ -193,7 +201,7 @@ const UploadDataList = () => {
         <div className="flex items-center">
           <span
             className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
-              row.getValue("data_status")
+              row.getValue("data_status"),
             )}`}
           >
             {row.getValue("data_status")}
@@ -377,8 +385,7 @@ const UploadDataList = () => {
                   ))}
               </DropdownMenuContent>
             </DropdownMenu>
-
-            <CreateUploadData onSuccess={() => refetch()} />
+            {userType !== 1 && <CreateUploadData onSuccess={() => refetch()} />}
             {userType !== 1 && (
               <Button
                 variant="default"
@@ -410,7 +417,7 @@ const UploadDataList = () => {
             {/* Status Tabs */}
             {uploadData?.status?.map((status) => {
               const statusCount = uploadData.dataUpload.filter(
-                (item) => item.data_status === status.companyStatus
+                (item) => item.data_status === status.companyStatus,
               ).length;
 
               return (
@@ -439,7 +446,7 @@ const UploadDataList = () => {
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                     </TableHead>
                   ))}
@@ -457,7 +464,7 @@ const UploadDataList = () => {
                       <TableCell key={cell.id}>
                         {flexRender(
                           cell.column.columnDef.cell,
-                          cell.getContext()
+                          cell.getContext(),
                         )}
                       </TableCell>
                     ))}

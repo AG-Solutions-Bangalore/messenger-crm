@@ -66,35 +66,7 @@ export function AppSidebar({ ...props }) {
         icon: Frame,
         isActive: false,
       },
-      // ...(userType === 3
-      //   ? [
-      // {
-      //   title: "Enquiry",
-      //   url: "#",
-      //   isActive: false,
-      //   icon: Settings2,
-      //   items: [
-      //     {
-      //       title: "Pending",
-      //       url: "/enquiry/pending",
-      //     },
-      //     {
-      //       title: "Cancel",
-      //       url: "/enquiry/cancel",
-      //     },
-      //     {
-      //       title: "User",
-      //       url: "/enquiry/user",
-      //     },
-      //   ],
-      // },
-      // {
-      //   title: "Company List",
-      //   url: "/company-list",
-      //   icon: ShoppingBag,
-      //   isActive: false,
-      // },
-      // : []),
+
       ...(userType === 3
         ? [
             {
@@ -116,12 +88,16 @@ export function AppSidebar({ ...props }) {
             },
           ]
         : []),
-      {
-        title: "User List",
-        url: "/company-list-user",
-        icon: ShoppingBag,
-        isActive: false,
-      },
+      ...(userType != 1
+        ? [
+            {
+              title: "User List",
+              url: "/company-list-user",
+              icon: ShoppingBag,
+              isActive: false,
+            },
+          ]
+        : []),
       {
         title: "Company Status",
         url: "/company-status",
