@@ -72,7 +72,7 @@ export function NavUser({ user }) {
           {sidebar_state == "true" && (
             <div className="flex justify-center py-2">
               <span className="bg-gray-100 text-gray-600 text-xs font-medium px-3 py-1 rounded-full shadow-sm hover:scale-110 transition-transform">
-                Updated on: 26-Mar-2025
+                Updated on: 21-Jan-2026
               </span>
             </div>
           )}
