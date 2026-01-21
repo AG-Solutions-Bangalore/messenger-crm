@@ -18,6 +18,7 @@ import UploadDataList from "@/app/uploadData/UploadDataList";
 import CompanySuperView from "@/app/companyList/companyListSuper/CompanySuperView";
 import SignUp from "@/app/auth/SignUp";
 import Download from "@/app/download/Download";
+import PendingFollowUp from "@/app/PendingFollowUp/PendingFollowUp";
 
 function AppRoutes() {
   return (
@@ -44,6 +45,7 @@ function AppRoutes() {
         <Route path="/company-status" element={<CompanyStatusList />} />
         {/* upload data  */}
         <Route path="/upload-data" element={<UploadDataList />} />
+        <Route path="/pending-followup" element={<PendingFollowUp />} />
         {/* download  */}
         <Route path="/download" element={<Download />} />
       </Route>

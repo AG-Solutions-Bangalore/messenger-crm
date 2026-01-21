@@ -1,14 +1,14 @@
-import React, { useState } from "react";
+import useApiToken from "@/components/common/UseToken";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -16,14 +16,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import BASE_URL from "@/config/BaseUrl";
+import { ButtonConfig } from "@/config/ButtonConfig";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, CalendarIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import BASE_URL from "@/config/BaseUrl";
-import moment from "moment";
-import { ButtonConfig } from "@/config/ButtonConfig";
-import useApiToken from "@/components/common/UseToken";
+import { CalendarIcon } from "lucide-react";
+import React, { useState } from "react";
 
 const FollowupDialog = ({ open, onOpenChange, followupId, onSuccess }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -32,7 +31,6 @@ const FollowupDialog = ({ open, onOpenChange, followupId, onSuccess }) => {
   const { toast } = useToast();
   const token = useApiToken();
 
-  // Fetch company status for dropdown
   const { data: statusData, isLoading: statusLoading } = useQuery({
     queryKey: ["companyStatus"],
     queryFn: async () => {
@@ -40,7 +38,7 @@ const FollowupDialog = ({ open, onOpenChange, followupId, onSuccess }) => {
         `${BASE_URL}/api/panel-fetch-company-status`,
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
       return response.data.companyStatus;
     },
@@ -66,7 +64,7 @@ const FollowupDialog = ({ open, onOpenChange, followupId, onSuccess }) => {
         },
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
 
       if (response?.data?.code === 200) {
