@@ -205,7 +205,7 @@ const PendingFollowUp = () => {
           <div className="relative w-full md:w-72">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
             <Input
-              placeholder="Search by mobile, message..."
+              placeholder="Search by mobile no..."
               value={table.getState().globalFilter || ""}
               onChange={(event) => table.setGlobalFilter(event.target.value)}
               className="pl-8 bg-gray-50 border-gray-200 focus:border-gray-300 focus:ring-gray-200 w-full"
@@ -246,11 +246,8 @@ const PendingFollowUp = () => {
           onValueChange={setActiveTab}
           className="mb-4"
         >
-          <TabsList className="h-full grid grid-cols-3 w-full shadow-lg">
-            <TabsTrigger value="all">
-              All ({uploadData?.dataUpload?.length || 0})
-            </TabsTrigger>
-
+          <TabsList className="h-full grid grid-cols-2 w-full shadow-lg">
+      
             <TabsTrigger value="Pending">
               Pending (
               {uploadData?.dataUpload?.filter(
