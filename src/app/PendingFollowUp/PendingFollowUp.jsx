@@ -3,12 +3,6 @@ import LoaderComponent, {
 } from "@/components/common/LoaderComponent";
 import useApiToken from "@/components/common/UseToken";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -37,16 +31,20 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import axios from "axios";
-import { CalendarClock, ChevronDown, Phone, Search } from "lucide-react";
+import { CalendarClock, Edit, Phone, Search } from "lucide-react";
 import React, { useState } from "react";
-import { useSelector } from "react-redux";
 import Page from "../dashboard/page";
 import FollowupDialog from "../uploadData/FollowupDialog";
+import FollowupStatusDialog from "./FollowupStatusDialog";
 
 const PendingFollowUp = () => {
-  const [activeTab, setActiveTab] = useState("all");
+  const [activeTab, setActiveTab] = useState("Pending");
+  const [followupStatusId, setFollowupStatusId] = useState(null);
   const [followupId, setFollowupId] = useState(null);
   const [followupDialogOpen, setFollowupDialogOpen] = useState(false);
+  const [followupsStatusDialogOpen, setFollowupStatusDialogOpen] =
+    useState(false);
+  const [currentStatus, setCurrentStatus] = useState("");
 
   const token = useApiToken();
 
@@ -67,7 +65,6 @@ const PendingFollowUp = () => {
       return response.data;
     },
   });
-
 
   const [sorting, setSorting] = useState([]);
   const [columnFilters, setColumnFilters] = useState([]);
@@ -124,6 +121,7 @@ const PendingFollowUp = () => {
       header: "Actions",
       cell: ({ row }) => {
         const id = row.original.id;
+        const status = row.original.data_status;
 
         return (
           <div className="flex flex-row">
@@ -134,9 +132,30 @@ const PendingFollowUp = () => {
                     variant="ghost"
                     size="icon"
                     onClick={() => {
+                      setFollowupStatusId(id);
+                      setCurrentStatus(status);
+                      setFollowupStatusDialogOpen(true);
+                    }}
+                  >
+                    <Edit className="text-blue-500 w-5 h-5" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Set Follow-up</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
                       setFollowupId(id);
                       setFollowupDialogOpen(true);
                     }}
+                    disabled
                   >
                     <CalendarClock className="text-blue-500 w-5 h-5" />
                   </Button>
@@ -195,7 +214,7 @@ const PendingFollowUp = () => {
   }
   return (
     <Page>
-      <div className="w-full p-0 md:p-4 grid grid-cols-1">
+      <div className="w-full p-0 grid grid-cols-1">
         <div className="flex text-left text-2xl text-gray-800 font-[400]">
           Pending List
         </div>
@@ -211,43 +230,15 @@ const PendingFollowUp = () => {
               className="pl-8 bg-gray-50 border-gray-200 focus:border-gray-300 focus:ring-gray-200 w-full"
             />
           </div>
-
-          <div className="flex flex-col md:flex-row md:ml-auto gap-2 w-full md:w-auto">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="w-full md:w-auto">
-                  Columns <ChevronDown className="ml-2 h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {table
-                  .getAllColumns()
-                  .filter((column) => column.getCanHide())
-                  .map((column) => (
-                    <DropdownMenuCheckboxItem
-                      key={column.id}
-                      className="capitalize"
-                      checked={column.getIsVisible()}
-                      onCheckedChange={(value) =>
-                        column.toggleVisibility(!!value)
-                      }
-                    >
-                      {column.id}
-                    </DropdownMenuCheckboxItem>
-                  ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
         </div>
 
         <Tabs
-          defaultValue="all"
+          defaultValue="Pending"
           value={activeTab}
           onValueChange={setActiveTab}
           className="mb-4"
         >
           <TabsList className="h-full grid grid-cols-2 w-full shadow-lg">
-      
             <TabsTrigger value="Pending">
               Pending (
               {uploadData?.dataUpload?.filter(
@@ -350,6 +341,13 @@ const PendingFollowUp = () => {
         onOpenChange={setFollowupDialogOpen}
         followupId={followupId}
         onSuccess={() => refetch()}
+      />
+      <FollowupStatusDialog
+        open={followupsStatusDialogOpen}
+        onOpenChange={setFollowupStatusDialogOpen}
+        followupId={followupStatusId}
+        onSuccess={() => refetch()}
+        currentStatus={currentStatus}
       />
     </Page>
   );
