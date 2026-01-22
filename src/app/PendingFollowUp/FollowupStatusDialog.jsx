@@ -1,13 +1,7 @@
 import useApiToken from "@/components/common/UseToken";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import BASE_URL from "@/config/BaseUrl";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
@@ -26,6 +20,7 @@ const FollowupStatusDialog = ({
 
   const [selectedStatus, setSelectedStatus] = useState(currentStatus);
   const [isLoading, setIsLoading] = useState(false);
+
   const { data: statusData } = useQuery({
     queryKey: ["companyStatus"],
     queryFn: async () => {
@@ -42,9 +37,9 @@ const FollowupStatusDialog = ({
       setSelectedStatus(currentStatus);
     }
   }, [open, currentStatus]);
+
   const handleSubmit = async (value) => {
-    if (!followupId) return;
-    console.log(value, "value");
+    if (!followupId || value === selectedStatus) return;
 
     setIsLoading(true);
     try {
@@ -61,7 +56,6 @@ const FollowupStatusDialog = ({
         });
         onSuccess();
         onOpenChange(false);
-        setSelectedStatus("");
       } else {
         throw new Error(res?.data?.msg);
       }
@@ -78,37 +72,30 @@ const FollowupStatusDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={(v) => !isLoading && onOpenChange(v)}>
-      <DialogContent
-        className="max-w-[280px] sm:max-w-md p-4 overflow-visible"
-        aria-describedby={undefined}
-      >
-        <div className="grid gap-2">
-          <Label className="text-xs">
-            Status <span className="text-red-500">*</span>
-          </Label>
+      <DialogContent className="max-w-[320px] p-4">
+        <div className="grid gap-3">
+          <Label className="text-sm font-medium">Change Status</Label>
 
-          <Select
-            key={followupId}
-            value={selectedStatus}
-            disabled={isLoading}
-            onValueChange={(value) => {
-              if (value === selectedStatus) return;
-              setSelectedStatus(value);
-              handleSubmit(value);
-            }}
-          >
-            <SelectTrigger className="h-8 text-sm">
-              <SelectValue placeholder="Select status" />
-            </SelectTrigger>
+          <div className="flex flex-col items-center gap-2">
+            {statusData?.map((status) => {
+              const isActive = status.companyStatus === selectedStatus;
 
-            <SelectContent position="popper">
-              {statusData?.map((status) => (
-                <SelectItem key={status.id} value={status.companyStatus}>
+              return (
+                <Button
+                  key={status.id}
+                  variant={isActive ? "default" : "outline"}
+                  size="sm"
+                  disabled={isLoading}
+                  className={`w-full max-w-[200px] capitalize ${
+                    isActive ? "bg-blue-600 text-white" : "hover:bg-blue-50"
+                  }`}
+                  onClick={() => handleSubmit(status.companyStatus)}
+                >
                   {status.companyStatus}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+                </Button>
+              );
+            })}
+          </div>
         </div>
       </DialogContent>
     </Dialog>

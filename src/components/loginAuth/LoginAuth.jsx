@@ -80,7 +80,11 @@ export default function LoginAuth() {
         };
 
         dispatch(loginSuccess(userData));
-        navigate("/home");
+        if (userData?.user_type == 1) {
+          navigate("/pending-followup");
+        } else {
+          navigate("/home");
+        }
       } else {
         console.warn("⚠️ Unexpected API response:", res);
         toast.error("Login Failed: Unexpected response.");

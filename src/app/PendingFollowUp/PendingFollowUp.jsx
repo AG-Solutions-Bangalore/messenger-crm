@@ -215,19 +215,21 @@ const PendingFollowUp = () => {
   return (
     <Page>
       <div className="w-full p-0 grid grid-cols-1">
-        <div className="flex text-left text-2xl text-gray-800 font-[400]">
-          Pending List
-        </div>
+        {/* Header + Search */}
+        <div className="flex flex-row items-center justify-between gap-2 md:flex-col md:items-start mb-2">
+          {/* Title */}
+          <div className="text-left text-lg md:text-2xl text-gray-800 font-normal">
+            Pending List
+          </div>
 
-        <div className="flex flex-col md:flex-row md:items-center py-4 gap-2">
-          {/* Search Input */}
-          <div className="relative w-full md:w-72">
+          {/* Search */}
+          <div className="relative w-40 sm:w-48 md:w-72">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
             <Input
               placeholder="Search by mobile no..."
               value={table.getState().globalFilter || ""}
               onChange={(event) => table.setGlobalFilter(event.target.value)}
-              className="pl-8 bg-gray-50 border-gray-200 focus:border-gray-300 focus:ring-gray-200 w-full"
+              className="pl-8 bg-gray-50 border-gray-200 focus:border-gray-300 focus:ring-gray-200 w-full text-sm md:text-base"
             />
           </div>
         </div>
