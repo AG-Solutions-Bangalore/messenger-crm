@@ -119,7 +119,7 @@ const Download = () => {
     <Page>
       <div className="bg-white rounded-lg shadow-lg p-6 md:p-4 sm:p-3 md:h-44 border border-gray-200">
         <h2 className="text-lg font-semibold mb-2">Download</h2>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label htmlFor="from_date" className="text-right">
               From Date<span className="text-red-500">*</span>
