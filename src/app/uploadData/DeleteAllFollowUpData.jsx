@@ -21,7 +21,6 @@ import { ButtonConfig } from "@/config/ButtonConfig";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { Loader2 } from "lucide-react";
 import { useState } from "react";
 
 const DeleteAllFollowUpData = ({
@@ -44,7 +43,7 @@ const DeleteAllFollowUpData = ({
         `${BASE_URL}/api/panel-fetch-company-status`,
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
       return response.data.companyStatus;
     },
@@ -69,7 +68,7 @@ const DeleteAllFollowUpData = ({
         formData,
         {
           headers: { Authorization: `Bearer ${token}` },
-        }
+        },
       );
 
       if (response?.data?.code === 200) {
@@ -102,6 +101,42 @@ const DeleteAllFollowUpData = ({
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+  const handleDeleteAll = async () => {
+    try {
+      const response = await axios.post(
+        `${BASE_URL}/api/panel-delete-upload-datas`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+
+      if (response?.data?.code === 200) {
+        toast({
+          title: "Success",
+          description: response?.data?.msg || "Deleted successfully!",
+        });
+        onSuccess();
+        onOpenChange(false);
+      } else if (response?.data?.code === 400) {
+        toast({
+          title: "Error",
+          description: response?.data?.msg || "Duplicate User!",
+          variant: "destructive",
+        });
+      } else {
+        throw new Error(response?.data?.msg || "Failed to delete follow-up.");
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description:
+          error?.response?.data?.message ||
+          "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -148,10 +183,16 @@ const DeleteAllFollowUpData = ({
         </div>
         <DialogFooter>
           <Button
+            onClick={handleDeleteAll}
+            className={`${ButtonConfig.backgroundColor} ${ButtonConfig.hoverBackgroundColor} ${ButtonConfig.textColor} `}
+          >
+            Delete All
+          </Button>
+          <Button
             onClick={handleSubmit}
             disabled={isLoading}
             loading={isLoading}
-            className={`${ButtonConfig.backgroundColor} ${ButtonConfig.hoverBackgroundColor} ${ButtonConfig.textColor}`}
+            className={`${ButtonConfig.backgroundColor} ${ButtonConfig.hoverBackgroundColor} ${ButtonConfig.textColor} mb-2`}
           >
             {isLoading ? <>Deleteting...</> : "Delete Follow-up"}
           </Button>

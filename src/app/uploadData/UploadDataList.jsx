@@ -41,6 +41,7 @@ import {
   Calendar,
   SquarePlus,
   Trash2,
+  ArrowLeftRight,
 } from "lucide-react";
 import Loader from "@/components/loader/Loader";
 import { ButtonConfig } from "@/config/ButtonConfig";
@@ -55,12 +56,15 @@ import LoaderComponent, {
 } from "@/components/common/LoaderComponent";
 import useApiToken from "@/components/common/UseToken";
 import { useSelector } from "react-redux";
+import ExchangeFollowupDialog from "./ExchangeFollowupDialog";
 
 const UploadDataList = () => {
   const [activeTab, setActiveTab] = useState("all");
   const [followupId, setFollowupId] = useState(null);
   const [followupdeleteId, setFollowupdeleteId] = useState(null);
   const [followupDialogOpen, setFollowupDialogOpen] = useState(false);
+  const [followupDialogExchnageOpen, setFollowupDialogExchnageOpen] =
+    useState(false);
   const [followupDeleteDialogOpen, setFollowupDeleteDialogOpen] =
     useState(false);
   const [followupDeleteallDialogOpen, setFollowupDeleteallDialogOpen] =
@@ -252,6 +256,7 @@ const UploadDataList = () => {
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
+
             {userType !== 1 && (
               <TooltipProvider>
                 <Tooltip>
@@ -398,6 +403,16 @@ const UploadDataList = () => {
                 Delete All Data
               </Button>
             )}
+            <Button
+              variant="default"
+              className={`${ButtonConfig.backgroundColor} ${ButtonConfig.hoverBackgroundColor} ${ButtonConfig.textColor}`}
+              onClick={() => {
+                setFollowupDialogExchnageOpen(true);
+              }}
+            >
+              <ArrowLeftRight className="w-5 h-5" />
+              Exchange Follow-up
+            </Button>
           </div>
         </div>
 
@@ -516,6 +531,11 @@ const UploadDataList = () => {
         open={followupDialogOpen}
         onOpenChange={setFollowupDialogOpen}
         followupId={followupId}
+        onSuccess={() => refetch()}
+      />
+      <ExchangeFollowupDialog
+        open={followupDialogExchnageOpen}
+        onOpenChange={setFollowupDialogExchnageOpen}
         onSuccess={() => refetch()}
       />
       <DeleteFollowUp
